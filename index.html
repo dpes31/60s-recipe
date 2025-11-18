@@ -7,198 +7,170 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* 프리텐다드 폰트 적용 (깔끔한 고딕) */
         @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
         
         body {
             font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-            background-color: #E5E5E5; /* PC 배경색 (세련된 그레이) */
+            background-color: #f3f4f6;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            color: #191F28;
+            color: #111827;
         }
 
-        /* 모바일 앱 프레임 (PC 중앙 정렬) */
-        #app-container {
+        /* 모바일 앱 컨테이너 */
+        #app-frame {
             max-width: 480px;
             min-height: 100vh;
             margin: 0 auto;
             background-color: #ffffff;
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             overflow-x: hidden;
         }
 
-        /* 스크롤바 숨김 처리 */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        /* 스크롤바 숨김 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 체크박스 커스텀 애니메이션 */
-        .check-ani {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        /* 하단 안전 영역 */
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+
+        /* 체크박스 애니메이션 */
+        @keyframes check-bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
-        
-        /* 안전 영역 */
-        .safe-pb {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
+        .animate-check { animation: check-bounce 0.3s ease-in-out; }
     </style>
 </head>
 <body>
 
-    <div id="app-container" class="flex flex-col">
+    <div id="app-frame" class="flex flex-col bg-white">
         
-        <!-- 1. 헤더 이미지 영역 (패럴랙스 느낌) -->
-        <header class="relative h-[380px] flex-shrink-0 bg-gray-900">
-            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
-                 alt="Curry" 
-                 class="w-full h-full object-cover opacity-90">
-            
-            <!-- 상단 그라데이션 (텍스트 보호) -->
-            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></div>
-
-            <!-- 네비게이션 -->
-            <div class="absolute top-0 left-0 w-full p-5 pt-12 flex justify-between items-center z-10">
-                <button class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform">
-                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        <!-- 1. 헤더 (뒤로가기 및 타이틀) -->
+        <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+            <div class="flex items-center justify-between px-4 h-14">
+                <button class="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-6 h-6 text-gray-900"></i>
                 </button>
-                <button class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform">
-                    <i data-lucide="bookmark" class="w-5 h-5"></i>
+                <h1 class="text-base font-bold text-gray-900">재료 준비하기</h1>
+                <button class="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <i data-lucide="share-2" class="w-5 h-5 text-gray-900"></i>
                 </button>
-            </div>
-
-            <!-- 타이틀 -->
-            <div class="absolute bottom-0 left-0 w-full p-6 pb-10 text-white">
-                <span class="inline-block px-2.5 py-1 rounded-md bg-[#F2994A] text-white text-[11px] font-bold tracking-wide mb-3 shadow-sm">GOLDEN RECIPE</span>
-                <h1 class="text-[32px] font-bold leading-[1.2] mb-2">깊은 풍미의<br>소고기 카레</h1>
-                <div class="flex items-center gap-3 text-white/80 text-sm font-medium">
-                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i> 40분</span>
-                    <span class="w-px h-3 bg-white/30"></span>
-                    <span>난이도 중</span>
-                </div>
             </div>
         </header>
 
-        <!-- 2. 컨텐츠 영역 (라운드 시트) -->
-        <main class="relative -mt-6 bg-white rounded-t-[32px] flex-1 z-10 px-6 pt-8 pb-32 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+        <!-- 2. 메인 컨텐츠 -->
+        <main class="flex-1 px-5 pt-6 pb-40">
             
-            <!-- 섹션 헤더 -->
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-[#191F28]">필요한 재료</h2>
-                    <p class="text-[13px] text-[#8B95A1] mt-1">4인분 기준</p>
+            <!-- 레시피 요약 카드 -->
+            <div class="bg-orange-50 rounded-2xl p-5 mb-8 flex gap-4 items-center">
+                <div class="w-16 h-16 rounded-xl bg-orange-200 overflow-hidden flex-shrink-0">
+                     <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Curry" class="w-full h-full object-cover mix-blend-multiply">
                 </div>
-                <button onclick="toggleAll()" class="text-sm font-semibold text-[#F2994A] active:text-[#d98235] transition-colors">
-                    전체 선택
+                <div>
+                    <span class="text-xs font-bold text-orange-600 uppercase tracking-wide">Main Recipe</span>
+                    <h2 class="text-lg font-bold text-gray-900 leading-tight">깊은 풍미의 소고기 카레</h2>
+                    <p class="text-xs text-gray-500 mt-1">4인분 · 40분 소요</p>
+                </div>
+            </div>
+
+            <!-- 재료 리스트 헤더 -->
+            <div class="flex items-end justify-between mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">필요한 재료 <span class="text-orange-500" id="item-count">0</span></h3>
+                    <p class="text-xs text-gray-400 mt-1">선택하여 장바구니에 담아보세요</p>
+                </div>
+                <!-- 개선된 전체 선택 버튼 -->
+                <button onclick="toggleAll()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors group">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+                    <span class="text-xs font-semibold text-gray-600">전체 선택</span>
                 </button>
             </div>
 
-            <!-- 재료 리스트 (심플 리스트 스타일) -->
-            <div id="ingredient-list" class="flex flex-col gap-4">
-                <!-- JS로 렌더링 됩니다 -->
+            <!-- 재료 리스트 (카드형 UI) -->
+            <div id="ingredient-list" class="space-y-3">
+                <!-- JS 렌더링 -->
             </div>
             
-            <!-- 추가 정보 (여백 채움용) -->
-            <div class="mt-10 p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                <h3 class="font-bold text-sm text-gray-800 mb-2">💡 셰프의 팁</h3>
+            <!-- 셰프의 팁 -->
+            <div class="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                    <span class="text-sm font-bold text-gray-800">셰프의 조리 팁</span>
+                </div>
                 <p class="text-xs text-gray-500 leading-relaxed">
-                    양파를 갈색이 될 때까지 충분히 볶아주면(카라멜라이징) 카레의 풍미가 훨씬 깊어집니다. 소고기는 핏물을 제거하고 사용하세요.
+                    양파를 갈색이 될 때까지 충분히 볶아주면(카라멜라이징) 카레의 풍미가 훨씬 깊어집니다.
                 </p>
             </div>
         </main>
 
-        <!-- 3. 하단 고정 버튼 -->
-        <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 p-5 safe-pb z-50">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex flex-col">
-                    <span class="text-xs text-gray-400 font-medium">총 예상 금액</span>
-                    <strong id="total-price" class="text-xl font-bold text-[#191F28]">0원</strong>
+        <!-- 3. 하단 고정 버튼 (CTA) -->
+        <!-- 그림자와 그라데이션으로 입체감 부여 -->
+        <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 p-5 safe-pb z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <div class="flex flex-col gap-3">
+                <!-- 가격 정보 -->
+                <div class="flex justify-between items-center px-1">
+                    <span class="text-sm text-gray-500 font-medium">총 예상 금액</span>
+                    <span id="total-price" class="text-xl font-bold text-gray-900">0원</span>
                 </div>
-                <button onclick="showToast('쿠팡 장바구니 담기 기능 준비중')" class="bg-[#191F28] text-white px-8 py-4 rounded-2xl font-bold text-base shadow-lg active:scale-[0.98] transition-transform flex-1 flex justify-center items-center gap-2">
-                    <span>장바구니 담기</span>
+                <!-- 구매 버튼 -->
+                <button onclick="goToCoupang()" id="cart-btn" class="w-full bg-[#E61E1F] hover:bg-[#cf1b1c] text-white py-4 rounded-xl font-bold text-base shadow-lg shadow-red-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 fill-white/20"></i>
+                    <span>선택한 재료 구매하러 가기</span>
                 </button>
             </div>
         </div>
         
-        <!-- 토스트 메시지 -->
-        <div id="toast" class="absolute top-[100px] left-1/2 -translate-x-1/2 bg-[#191F28]/90 backdrop-blur-sm text-white text-sm px-5 py-2.5 rounded-full opacity-0 transition-opacity duration-300 pointer-events-none z-[60] whitespace-nowrap shadow-xl">
-            알림 메시지
+        <!-- 알림 토스트 -->
+        <div id="toast" class="absolute top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900/90 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-[100] flex items-center gap-3 min-w-max">
+            <i data-lucide="info" class="w-5 h-5 text-white"></i>
+            <span id="toast-msg" class="text-sm font-medium">메시지</span>
         </div>
 
     </div>
 
     <script>
-        // 데이터 설정 (요청하신 링크 반영)
-        // 썸네일 이미지는 디자인 컨셉상 제거하고 텍스트 위주로 갑니다.
         const ingredients = [
-            { 
-                id: 1, 
-                name: "양파", 
-                sub: "필수 재료", 
-                price: 8900, 
-                link: "https://link.coupang.com/a/c5CXMg"
-            },
-            { 
-                id: 2, 
-                name: "당근", 
-                sub: "세척 당근 1kg", 
-                price: 5500, 
-                link: "https://link.coupang.com/a/c5CYAb"
-            },
-            { 
-                id: 3, 
-                name: "소고기", 
-                sub: "카레/국거리용", 
-                price: 18900, 
-                link: "https://link.coupang.com/a/c5CZbA"
-            },
-            { 
-                id: 4, 
-                name: "고형 카레", 
-                sub: "깊은 맛 (매운맛)", 
-                price: 3200, 
-                link: "https://link.coupang.com/a/c5CZJz"
-            }
+            { id: 1, name: "양파", sub: "필수 재료 (3kg)", price: 8900, link: "https://link.coupang.com/a/c5CXMg" },
+            { id: 2, name: "세척 당근", sub: "신선한 당근 (1kg)", price: 5500, link: "https://link.coupang.com/a/c5CYAb" },
+            { id: 3, name: "소고기", sub: "카레/국거리용 (300g)", price: 18900, link: "https://link.coupang.com/a/c5CZbA" },
+            { id: 4, name: "고형 카레", sub: "깊은 맛/매운맛 (1개)", price: 3200, link: "https://link.coupang.com/a/c5CZJz" }
         ];
 
-        // 상태 관리
-        let cart = new Set();
-        const STORAGE_KEY = 'curry_cart_v1';
+        let cart = new Set(); // 선택된 아이템 ID 저장
+        const STORAGE_KEY = 'curry_app_cart';
 
-        // 로컬 스토리지 로드
+        // 로컬 스토리지 관리
         function loadCart() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
                     const parsed = JSON.parse(saved);
                     ingredients.forEach(i => {
                         if(parsed.includes(i.id)) cart.add(i.id);
                     });
-                } else {
-                    // 기본적으로 전체 선택 되어있도록 유도 (선택사항)
-                    // ingredients.forEach(i => cart.add(i.id));
-                }
-            } catch(e) {
-                console.error(e);
+                } catch(e) { console.error(e); }
+            } else {
+                // 초기 진입 시 전체 선택 상태로 유도 (UX 팁)
+                ingredients.forEach(i => cart.add(i.id));
+                saveCart();
             }
         }
 
-        // 로컬 스토리지 저장
         function saveCart() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...cart]));
         }
 
-        // 렌더링
+        // UI 렌더링
         function render() {
             const listEl = document.getElementById('ingredient-list');
             const totalEl = document.getElementById('total-price');
-            
+            const countEl = document.getElementById('item-count');
+            const btnEl = document.getElementById('cart-btn');
+
             listEl.innerHTML = '';
             let total = 0;
 
@@ -206,47 +178,69 @@
                 const isChecked = cart.has(item.id);
                 if(isChecked) total += item.price;
 
-                // 모던한 체크리스트 UI
+                // 스타일링: 선택 여부에 따라 테두리와 배경색 변경
+                const cardClass = isChecked 
+                    ? 'border-orange-500 bg-orange-50/30 ring-1 ring-orange-500/20' 
+                    : 'border-gray-200 bg-white hover:bg-gray-50';
+                
+                const iconClass = isChecked
+                    ? 'bg-orange-500 border-orange-500 text-white'
+                    : 'bg-white border-gray-300 text-transparent';
+
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between group cursor-pointer select-none";
+                // items-stretch로 변경하여 높이 균형 맞춤
+                div.className = `relative flex items-center p-4 rounded-xl border transition-all duration-200 cursor-pointer group ${cardClass}`;
                 div.onclick = (e) => {
-                    // 링크 클릭 시 체크박스 토글 방지
-                    if(e.target.closest('a')) return;
+                    if(e.target.closest('a')) return; // 링크 클릭은 무시
                     toggleItem(item.id);
                 };
 
                 div.innerHTML = `
-                    <div class="flex items-center gap-4 flex-1">
-                        <!-- 커스텀 체크박스 -->
-                        <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center check-ani ${isChecked ? 'bg-[#F2994A] border-[#F2994A]' : 'border-gray-300 bg-white'}">
-                            <i data-lucide="check" class="w-3.5 h-3.5 text-white ${isChecked ? 'opacity-100' : 'opacity-0'}"></i>
-                        </div>
-                        
-                        <!-- 텍스트 정보 -->
-                        <div class="flex flex-col">
-                            <span class="text-[16px] font-medium ${isChecked ? 'text-[#191F28]' : 'text-gray-500'} transition-colors">${item.name}</span>
-                            <span class="text-[12px] text-gray-400">${item.sub}</span>
+                    <!-- 커스텀 체크박스 (왼쪽) -->
+                    <div class="flex-shrink-0 mr-4">
+                        <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${iconClass}">
+                            <i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <span class="text-[14px] font-semibold text-[#191F28]">${item.price.toLocaleString()}원</span>
-                        <!-- 개별 링크 버튼 (작고 세련되게) -->
-                        <a href="${item.link}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors">
-                            <i data-lucide="external-link" class="w-4 h-4"></i>
-                        </a>
+                    <!-- 정보 (중앙) -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-bold text-gray-900 text-base truncate">${item.name}</h4>
+                            <!-- 개별 링크 (아이콘만 깔끔하게) -->
+                            <a href="${item.link}" target="_blank" class="p-1.5 rounded-md bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500 truncate">${item.sub}</p>
+                            <span class="font-bold text-gray-900">${item.price.toLocaleString()}원</span>
+                        </div>
                     </div>
                 `;
                 listEl.appendChild(div);
             });
 
-            // 총액 애니메이션
+            // 하단 정보 업데이트
             totalEl.innerText = total.toLocaleString() + "원";
+            countEl.innerText = cart.size;
             
+            // 버튼 활성화 상태
+            if(cart.size > 0) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = `<i data-lucide="shopping-cart" class="w-5 h-5 fill-white/20"></i> <span>${cart.size}개 재료 구매하러 가기</span>`;
+                btnEl.classList.remove('bg-gray-300');
+                btnEl.classList.add('bg-[#E61E1F]');
+            } else {
+                btnEl.disabled = true;
+                btnEl.innerHTML = `<span>재료를 선택해주세요</span>`;
+                btnEl.classList.remove('bg-[#E61E1F]');
+                btnEl.classList.add('bg-gray-300');
+            }
+
             lucide.createIcons();
         }
 
-        // 액션 함수들
         function toggleItem(id) {
             if(cart.has(id)) cart.delete(id);
             else cart.add(id);
@@ -257,24 +251,52 @@
         function toggleAll() {
             if(cart.size === ingredients.length) {
                 cart.clear();
-                showToast("전체 선택 해제");
+                showToast("모든 선택을 해제했습니다");
             } else {
                 ingredients.forEach(i => cart.add(i.id));
-                showToast("모든 재료 선택 완료");
+                showToast("모든 재료를 선택했습니다");
             }
             saveCart();
             render();
         }
 
+        // 쿠팡 연동 (대체 구현)
+        function goToCoupang() {
+            if(cart.size === 0) return;
+            
+            // 1. 안내 메시지
+            showToast("선택한 재료의 구매 페이지를 엽니다");
+
+            // 2. 기술적 한계로 인한 대체 로직 설명 (콘솔)
+            console.log("Direct cart adding is not supported without partnership API. Opening links instead.");
+
+            // 3. 선택된 아이템의 링크 열기 (팝업 차단 이슈가 있을 수 있어 순차 오픈 혹은 마지막 탭 오픈)
+            // 여기서는 사용자 경험을 위해 '첫번째' 혹은 '모든' 링크를 여는 시도를 합니다.
+            const selectedItems = ingredients.filter(i => cart.has(i.id));
+            
+            if(confirm(`쿠팡 장바구니 직접 담기는 제휴 기능입니다.\n대신 선택하신 ${selectedItems.length}개의 상품 페이지를 새 탭으로 열어드릴까요?`)) {
+                selectedItems.forEach((item, index) => {
+                    // 브라우저가 한 번에 여러 탭 여는 것을 막을 수 있으므로 약간의 딜레이
+                    setTimeout(() => {
+                        window.open(item.link, '_blank');
+                    }, index * 300);
+                });
+            }
+        }
+
         let toastTimer;
-        window.showToast = function(msg) {
+        function showToast(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.opacity = '1';
+            const msgEl = document.getElementById('toast-msg');
+            msgEl.innerText = msg;
+            
+            toast.classList.remove('opacity-0');
+            toast.classList.add('animate-bounce'); // 주목 효과
             
             if(toastTimer) clearTimeout(toastTimer);
             toastTimer = setTimeout(() => {
-                toast.style.opacity = '0';
+                toast.classList.add('opacity-0');
+                toast.classList.remove('animate-bounce');
             }, 2000);
         }
 
@@ -282,7 +304,6 @@
         loadCart();
         render();
         lucide.createIcons();
-
     </script>
 </body>
 </html>
