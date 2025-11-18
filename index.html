@@ -3,279 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Premium Recipe Manager</title>
+    <title>Curry Recipe Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+        /* 프리텐다드 폰트 적용 (깔끔한 고딕) */
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
         
         body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            background-color: #E5E5E5; /* PC 배경색 (세련된 그레이) */
+            margin: 0;
+            padding: 0;
             -webkit-tap-highlight-color: transparent;
+            color: #191F28;
         }
 
-        /* Safe Area for iPhone X+ */
-        .safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom);
+        /* 모바일 앱 프레임 (PC 중앙 정렬) */
+        #app-container {
+            max-width: 480px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background-color: #ffffff;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            overflow-x: hidden;
         }
 
-        /* Hide Scrollbar but allow scrolling */
-        .no-scrollbar::-webkit-scrollbar {
+        /* 스크롤바 숨김 처리 */
+        .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .no-scrollbar {
+        .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
 
-        /* Glassmorphism Effect */
-        .glass {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        /* 체크박스 커스텀 애니메이션 */
+        .check-ani {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* Smooth Fade In */
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        /* 안전 영역 */
+        .safe-pb {
+            padding-bottom: env(safe-area-inset-bottom);
         }
     </style>
 </head>
-<body class="min-h-screen bg-[#121212] text-white relative overflow-x-hidden">
+<body>
 
-    <!-- 1. 몰입형 비디오/이미지 헤더 (모바일 최적화) -->
-    <div class="relative w-full h-[45vh] overflow-hidden">
-        <!-- 그라데이션 오버레이 (텍스트 가독성 확보) -->
-        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#121212] z-10"></div>
+    <div id="app-container" class="flex flex-col">
         
-        <!-- 관리자 컨트롤 (상단 고정) -->
-        <div class="absolute top-0 left-0 right-0 z-20 p-6 pt-12 flex justify-between items-start">
-            <button class="bg-black/30 backdrop-blur-md p-2 rounded-full border border-white/10 active:scale-95 transition-transform">
-                <i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
-            </button>
-            <div class="flex gap-3">
-                <span class="bg-emerald-500/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-lg">ADMIN TEST</span>
-                <button class="bg-black/30 backdrop-blur-md p-2 rounded-full border border-white/10 active:scale-95 transition-transform">
-                    <i data-lucide="share-2" class="w-5 h-5 text-white"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- 메인 비디오 썸네일 (이전 버전에서 안보이던 문제 해결을 위해 background-image 사용) -->
-        <div class="w-full h-full bg-cover bg-center transform scale-105" 
-             style="background-image: url('https://images.unsplash.com/photo-1556910103-1c02745a30bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
-             <!-- Play Button Overlay -->
-             <div class="absolute inset-0 z-10 flex items-center justify-center">
-                <button class="group relative flex items-center justify-center">
-                    <div class="absolute w-16 h-16 bg-emerald-500/30 rounded-full animate-ping"></div>
-                    <div class="relative w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 group-active:scale-95 transition-all">
-                        <i data-lucide="play" class="w-6 h-6 text-white fill-white ml-1"></i>
-                    </div>
-                </button>
-             </div>
-        </div>
-    </div>
-
-    <!-- 2. 메인 컨텐츠 (바텀 시트 스타일) -->
-    <main class="relative z-20 -mt-10 px-6 pb-40">
-        <!-- 타이틀 섹션 -->
-        <div class="mb-8 fade-in" style="animation-delay: 0.1s;">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-emerald-400 text-sm font-semibold tracking-wider">ITALIAN RECIPE</span>
-                <div class="h-1 w-1 rounded-full bg-gray-500"></div>
-                <span class="text-gray-400 text-sm">20 min</span>
-            </div>
-            <h1 class="text-3xl font-bold leading-tight mb-4">클래식 바질 페스토 파스타<br><span class="text-gray-500 text-xl font-normal">Chef. Gordon Style</span></h1>
+        <!-- 1. 헤더 이미지 영역 (패럴랙스 느낌) -->
+        <header class="relative h-[380px] flex-shrink-0 bg-gray-900">
+            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                 alt="Curry" 
+                 class="w-full h-full object-cover opacity-90">
             
-            <div class="flex items-center justify-between p-4 bg-[#1E1E1E] rounded-2xl border border-white/5">
-                <div class="text-center">
-                    <span class="block text-gray-400 text-xs mb-1">난이도</span>
-                    <span class="font-medium">중급</span>
-                </div>
-                <div class="w-px h-8 bg-white/10"></div>
-                <div class="text-center">
-                    <span class="block text-gray-400 text-xs mb-1">총 비용</span>
-                    <span class="font-medium text-emerald-400">42,500원</span>
-                </div>
-                <div class="w-px h-8 bg-white/10"></div>
-                <div class="text-center">
-                    <span class="block text-gray-400 text-xs mb-1">칼로리</span>
-                    <span class="font-medium">580 kcal</span>
+            <!-- 상단 그라데이션 (텍스트 보호) -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></div>
+
+            <!-- 네비게이션 -->
+            <div class="absolute top-0 left-0 w-full p-5 pt-12 flex justify-between items-center z-10">
+                <button class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </button>
+                <button class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform">
+                    <i data-lucide="bookmark" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- 타이틀 -->
+            <div class="absolute bottom-0 left-0 w-full p-6 pb-10 text-white">
+                <span class="inline-block px-2.5 py-1 rounded-md bg-[#F2994A] text-white text-[11px] font-bold tracking-wide mb-3 shadow-sm">GOLDEN RECIPE</span>
+                <h1 class="text-[32px] font-bold leading-[1.2] mb-2">깊은 풍미의<br>소고기 카레</h1>
+                <div class="flex items-center gap-3 text-white/80 text-sm font-medium">
+                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i> 40분</span>
+                    <span class="w-px h-3 bg-white/30"></span>
+                    <span>난이도 중</span>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- 재료 섹션 헤더 -->
-        <div class="flex items-end justify-between mb-5 fade-in" style="animation-delay: 0.2s;">
-            <h2 class="text-xl font-bold">필요한 재료 <span class="text-emerald-500 ml-1">5</span></h2>
-            <button class="text-xs text-gray-500 flex items-center gap-1 active:text-emerald-400">
-                링크 점검 <i data-lucide="check-circle-2" class="w-3 h-3"></i>
-            </button>
-        </div>
-
-        <!-- 재료 리스트 (카드형) -->
-        <div id="ingredient-list" class="space-y-3 fade-in" style="animation-delay: 0.3s;">
-            <!-- JS로 렌더링됨 -->
-        </div>
-
-        <!-- 여백 (하단 버튼 가림 방지) -->
-        <div class="h-12"></div>
-    </main>
-
-    <!-- 3. 플로팅 바텀 액션 바 (Glassmorphism) -->
-    <div class="fixed bottom-0 left-0 right-0 z-50 glass safe-bottom">
-        <div class="px-6 py-4">
-            <div class="flex gap-3 items-center">
-                <!-- 장바구니 상태/초기화 -->
-                <div class="flex-shrink-0 relative">
-                    <button onclick="resetCart()" class="w-14 h-14 bg-[#2A2A2A] rounded-2xl flex items-center justify-center text-gray-400 border border-white/5 active:bg-[#333] transition-colors">
-                        <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
-                    </button>
-                    <!-- 뱃지 (선택된 개수) -->
-                    <span id="cart-count" class="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+        <!-- 2. 컨텐츠 영역 (라운드 시트) -->
+        <main class="relative -mt-6 bg-white rounded-t-[32px] flex-1 z-10 px-6 pt-8 pb-32 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+            
+            <!-- 섹션 헤더 -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-[#191F28]">필요한 재료</h2>
+                    <p class="text-[13px] text-[#8B95A1] mt-1">4인분 기준</p>
                 </div>
+                <button onclick="toggleAll()" class="text-sm font-semibold text-[#F2994A] active:text-[#d98235] transition-colors">
+                    전체 선택
+                </button>
+            </div>
 
-                <!-- 전체 담기 버튼 -->
-                <button onclick="addAllToCart()" class="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl flex items-center justify-center gap-2 text-white font-bold text-lg shadow-lg shadow-emerald-900/40 active:scale-[0.98] transition-all">
-                    <span id="main-btn-text">모든 재료 담기</span>
-                    <span class="w-px h-4 bg-white/20 mx-1"></span>
-                    <span id="total-price" class="font-medium">0원</span>
+            <!-- 재료 리스트 (심플 리스트 스타일) -->
+            <div id="ingredient-list" class="flex flex-col gap-4">
+                <!-- JS로 렌더링 됩니다 -->
+            </div>
+            
+            <!-- 추가 정보 (여백 채움용) -->
+            <div class="mt-10 p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                <h3 class="font-bold text-sm text-gray-800 mb-2">💡 셰프의 팁</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    양파를 갈색이 될 때까지 충분히 볶아주면(카라멜라이징) 카레의 풍미가 훨씬 깊어집니다. 소고기는 핏물을 제거하고 사용하세요.
+                </p>
+            </div>
+        </main>
+
+        <!-- 3. 하단 고정 버튼 -->
+        <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 p-5 safe-pb z-50">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col">
+                    <span class="text-xs text-gray-400 font-medium">총 예상 금액</span>
+                    <strong id="total-price" class="text-xl font-bold text-[#191F28]">0원</strong>
+                </div>
+                <button onclick="showToast('쿠팡 장바구니 담기 기능 준비중')" class="bg-[#191F28] text-white px-8 py-4 rounded-2xl font-bold text-base shadow-lg active:scale-[0.98] transition-transform flex-1 flex justify-center items-center gap-2">
+                    <span>장바구니 담기</span>
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1E1E1E]/95 backdrop-blur border border-white/10 px-5 py-3 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300 translate-y-4">
-        <div class="bg-emerald-500/20 p-1.5 rounded-full">
-            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+        
+        <!-- 토스트 메시지 -->
+        <div id="toast" class="absolute top-[100px] left-1/2 -translate-x-1/2 bg-[#191F28]/90 backdrop-blur-sm text-white text-sm px-5 py-2.5 rounded-full opacity-0 transition-opacity duration-300 pointer-events-none z-[60] whitespace-nowrap shadow-xl">
+            알림 메시지
         </div>
-        <p id="toast-msg" class="text-sm font-medium text-white">장바구니에 담겼습니다.</p>
+
     </div>
 
     <script>
-        // 데이터
+        // 데이터 설정 (요청하신 링크 반영)
+        // 썸네일 이미지는 디자인 컨셉상 제거하고 텍스트 위주로 갑니다.
         const ingredients = [
-            { id: 1, name: "엑스트라 버진 올리브오일", brand: "De Cecco", price: 18500, img: "https://images.unsplash.com/photo-1474979266404-7cadd9385a53?auto=format&fit=crop&w=200&h=200&q=80" },
-            { id: 2, name: "프레시 생바질", brand: "팜프레시", price: 4200, img: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=200&h=200&q=80" },
-            { id: 3, name: "파르미지아노 레지아노", brand: "Zanetti", price: 12800, img: "https://images.unsplash.com/photo-1632340603655-85d581494086?auto=format&fit=crop&w=200&h=200&q=80" },
-            { id: 4, name: "국내산 통마늘", brand: "농협", price: 3500, img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=200&h=200&q=80" },
-            { id: 5, name: "스파게티 면 No.12", brand: "De Cecco", price: 3500, img: "https://images.unsplash.com/photo-1595855728531-049750a63332?auto=format&fit=crop&w=200&h=200&q=80" }
+            { 
+                id: 1, 
+                name: "양파", 
+                sub: "필수 재료", 
+                price: 8900, 
+                link: "https://link.coupang.com/a/c5CXMg"
+            },
+            { 
+                id: 2, 
+                name: "당근", 
+                sub: "세척 당근 1kg", 
+                price: 5500, 
+                link: "https://link.coupang.com/a/c5CYAb"
+            },
+            { 
+                id: 3, 
+                name: "소고기", 
+                sub: "카레/국거리용", 
+                price: 18900, 
+                link: "https://link.coupang.com/a/c5CZbA"
+            },
+            { 
+                id: 4, 
+                name: "고형 카레", 
+                sub: "깊은 맛 (매운맛)", 
+                price: 3200, 
+                link: "https://link.coupang.com/a/c5CZJz"
+            }
         ];
 
+        // 상태 관리
         let cart = new Set();
+        const STORAGE_KEY = 'curry_cart_v1';
 
+        // 로컬 스토리지 로드
+        function loadCart() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    ingredients.forEach(i => {
+                        if(parsed.includes(i.id)) cart.add(i.id);
+                    });
+                } else {
+                    // 기본적으로 전체 선택 되어있도록 유도 (선택사항)
+                    // ingredients.forEach(i => cart.add(i.id));
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // 로컬 스토리지 저장
+        function saveCart() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([...cart]));
+        }
+
+        // 렌더링
         function render() {
-            const container = document.getElementById('ingredient-list');
-            container.innerHTML = '';
+            const listEl = document.getElementById('ingredient-list');
+            const totalEl = document.getElementById('total-price');
+            
+            listEl.innerHTML = '';
             let total = 0;
 
             ingredients.forEach(item => {
-                const isSelected = cart.has(item.id);
-                if(isSelected) total += item.price;
+                const isChecked = cart.has(item.id);
+                if(isChecked) total += item.price;
 
-                const cardStyle = isSelected 
-                    ? 'bg-[#1E1E1E] border-emerald-500/50 ring-1 ring-emerald-500/30' 
-                    : 'bg-[#1E1E1E] border-white/5';
-                
-                const btnStyle = isSelected
-                    ? 'bg-emerald-500 text-white border-emerald-500'
-                    : 'bg-[#2A2A2A] text-gray-400 border-white/5';
+                // 모던한 체크리스트 UI
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between group cursor-pointer select-none";
+                div.onclick = (e) => {
+                    // 링크 클릭 시 체크박스 토글 방지
+                    if(e.target.closest('a')) return;
+                    toggleItem(item.id);
+                };
 
-                container.innerHTML += `
-                <div class="flex items-center p-3 rounded-2xl border ${cardStyle} transition-all duration-300 active:scale-[0.99]">
-                    <!-- 이미지 -->
-                    <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-[#2A2A2A] flex-shrink-0">
-                        <img src="${item.img}" class="w-full h-full object-cover" alt="${item.name}">
-                    </div>
-                    
-                    <!-- 텍스트 -->
-                    <div class="flex-1 ml-4 mr-2 min-w-0">
-                        <div class="text-xs text-gray-500 mb-0.5">${item.brand}</div>
-                        <h3 class="font-medium text-white truncate text-[15px] mb-1">${item.name}</h3>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-emerald-400">${item.price.toLocaleString()}원</span>
-                            <a href="#" class="text-[10px] text-gray-500 underline decoration-gray-600">쿠팡보기</a>
+                div.innerHTML = `
+                    <div class="flex items-center gap-4 flex-1">
+                        <!-- 커스텀 체크박스 -->
+                        <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center check-ani ${isChecked ? 'bg-[#F2994A] border-[#F2994A]' : 'border-gray-300 bg-white'}">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-white ${isChecked ? 'opacity-100' : 'opacity-0'}"></i>
+                        </div>
+                        
+                        <!-- 텍스트 정보 -->
+                        <div class="flex flex-col">
+                            <span class="text-[16px] font-medium ${isChecked ? 'text-[#191F28]' : 'text-gray-500'} transition-colors">${item.name}</span>
+                            <span class="text-[12px] text-gray-400">${item.sub}</span>
                         </div>
                     </div>
 
-                    <!-- 개별 버튼 -->
-                    <button onclick="toggle(${item.id})" class="w-10 h-10 rounded-xl flex items-center justify-center border ${btnStyle} transition-all active:scale-90">
-                        <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-5 h-5"></i>
-                    </button>
-                </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[14px] font-semibold text-[#191F28]">${item.price.toLocaleString()}원</span>
+                        <!-- 개별 링크 버튼 (작고 세련되게) -->
+                        <a href="${item.link}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    </div>
                 `;
+                listEl.appendChild(div);
             });
 
-            // 하단바 업데이트
-            const countBadge = document.getElementById('cart-count');
-            if(cart.size > 0) {
-                countBadge.innerText = cart.size;
-                countBadge.classList.remove('hidden');
-                document.getElementById('main-btn-text').innerText = cart.size === ingredients.length ? "구매하러 가기" : "나머지 모두 담기";
-            } else {
-                countBadge.classList.add('hidden');
-                document.getElementById('main-btn-text').innerText = "모든 재료 담기";
-                // 전체 합계 계산 (선택 안했을 땐 전체 가격 보여주기)
-                total = ingredients.reduce((acc, cur) => acc + cur.price, 0);
-            }
+            // 총액 애니메이션
+            totalEl.innerText = total.toLocaleString() + "원";
             
-            document.getElementById('total-price').innerText = total.toLocaleString() + "원";
             lucide.createIcons();
         }
 
-        function toggle(id) {
-            if(cart.has(id)) {
-                cart.delete(id);
-                showToast('장바구니에서 뺐습니다.');
-            } else {
-                cart.add(id);
-                showToast('장바구니에 담았습니다.');
-            }
+        // 액션 함수들
+        function toggleItem(id) {
+            if(cart.has(id)) cart.delete(id);
+            else cart.add(id);
+            saveCart();
             render();
         }
 
-        function addAllToCart() {
+        function toggleAll() {
             if(cart.size === ingredients.length) {
-                // 이미 다 담겼으면 결제 페이지 로직 등 (여기선 토스트만)
-                showToast('이미 모든 재료가 담겨있습니다.');
-                return;
+                cart.clear();
+                showToast("전체 선택 해제");
+            } else {
+                ingredients.forEach(i => cart.add(i.id));
+                showToast("모든 재료 선택 완료");
             }
-            ingredients.forEach(i => cart.add(i.id));
+            saveCart();
             render();
-            showToast('모든 재료를 담았습니다!');
-        }
-
-        function resetCart() {
-            if(cart.size === 0) return;
-            cart.clear();
-            render();
-            showToast('초기화되었습니다.');
         }
 
         let toastTimer;
-        function showToast(msg) {
+        window.showToast = function(msg) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
+            toast.innerText = msg;
+            toast.style.opacity = '1';
             
-            toast.classList.remove('opacity-0', 'translate-y-4');
-            
-            clearTimeout(toastTimer);
+            if(toastTimer) clearTimeout(toastTimer);
             toastTimer = setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-4');
+                toast.style.opacity = '0';
             }, 2000);
         }
 
-        // 초기실행
+        // 초기 실행
+        loadCart();
         render();
         lucide.createIcons();
+
     </script>
 </body>
 </html>
