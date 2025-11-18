@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>극효율 레시피 - 1분 요리 & 장보기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 기본 설정 */
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 스크롤 스냅 */
+        .snap-y-mandatory {
+            scroll-snap-type: y mandatory;
+        }
+        .snap-center {
+            scroll-snap-align: center;
+        }
+        
+        /* 스크롤바 숨기기 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 바텀 시트 애니메이션 */
+        .bottom-sheet {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(100%);
+            will-change: transform;
+        }
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        /* 비디오 오버레이 그라디언트 (가독성 확보) */
+        .video-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0) 100%);
+            pointer-events: none; /* 오버레이가 클릭을 막지 않도록 */
+        }
+        .video-overlay > * {
+            pointer-events: auto; /* 내부 버튼은 클릭 가능하게 */
+        }
+
+        /* 탭 활성화 효과 */
+        .nav-item { color: #6b7280; transition: color 0.2s; }
+        .nav-item.active { color: #fff; }
+
+        /* Toast 애니메이션 */
+        @keyframes slide-up-fade {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            10% { opacity: 1; transform: translate(-50%, 0); }
+            90% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+        .toast {
+            animation: slide-up-fade 3s forwards;
+        }
+
+        /* 버튼 눌림 효과 */
+        .btn-press:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+
+        /* 유튜브 iframe용 스타일 (클릭 방지 및 꽉 채우기) */
+        .youtube-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%; /* 모바일에서는 높이 기준 */
+            transform: translate(-50%, -50%) scale(1.35); /* 레터박스 제거를 위한 확대 */
+            pointer-events: none; /* 스크롤을 위해 터치 이벤트 무시 */
+            z-index: 0;
+        }
+        
+        /* 스크롤 터치 영역 확보 */
+        .scroll-touch-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 1; /* 비디오보다 위에 위치하여 터치 스크롤 감지 */
+        }
+    </style>
+</head>
+<body class="h-screen w-full overflow-hidden bg-black">
+
+    <!-- 모바일 컨테이너 -->
+    <div id="app-container" class="relative h-full w-full max-w-md mx-auto bg-black flex flex-col shadow-2xl">
+        
+        <!-- 상단 헤더 (투명) -->
+        <header class="absolute top-0 left-0 w-full z-20 px-5 py-4 flex justify-between items-center pointer-events-none">
+            <div class="text-lg font-bold tracking-tight flex items-center gap-1.5 opacity-90 pointer-events-auto">
+                <span class="text-amber-400"><i class="fa-solid fa-bolt"></i></span> 
+                <span>극효율 레시피</span>
+            </div>
+            <button onclick="app.toggleFilter()" class="bg-black/30 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-xs font-medium hover:bg-black/50 transition pointer-events-auto">
+                <i class="fa-solid fa-filter mr-1 text-amber-400"></i>냉장고 파먹기
+            </button>
+        </header>
+
+        <!-- 메인 콘텐츠 (비디오 피드) -->
+        <main id="main-content" class="flex-1 overflow-y-scroll snap-y-mandatory scrollbar-hide relative bg-gray-900">
+            <!-- 비디오 피드 JS 렌더링 -->
+        </main>
+
+        <!-- 장바구니 화면 (전체화면 오버레이) -->
+        <div id="cart-view" class="absolute inset-0 bg-zinc-900 z-30 hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-zinc-900">
+                <h2 class="text-xl font-bold tracking-tight">장바구니 <span id="cart-count-badge" class="text-amber-500 ml-1 text-lg">0</span></h2>
+                <button onclick="app.clearCart()" class="text-xs text-gray-400 border border-gray-700 px-2 py-1 rounded hover:bg-gray-800 transition">전체 삭제</button>
+            </div>
+            
+            <!-- 장바구니 리스트 -->
+            <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-3 pb-32">
+                <!-- 아이템 렌더링 -->
+            </div>
+
+            <!-- 하단 결제/합계 영역 -->
+            <div class="absolute bottom-16 left-0 w-full p-5 bg-zinc-900 border-t border-white/5">
+                <div class="flex justify-between items-baseline mb-4">
+                    <span class="text-sm text-gray-400">예상 합계</span>
+                    <span id="total-estimated-price" class="text-2xl font-bold text-white">0원</span>
+                </div>
+                <button onclick="app.buyAll()" class="btn-press w-full bg-amber-400 text-black font-bold text-lg py-4 rounded-2xl shadow-lg shadow-amber-400/10 hover:bg-amber-300 transition">
+                    모두 구매하러 가기 <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+                <p class="text-center text-[10px] text-gray-600 mt-2">각 상품의 쿠팡 페이지가 새 창으로 열립니다.</p>
+            </div>
+        </div>
+
+        <!-- 하단 네비게이션 -->
+        <nav class="h-[60px] bg-black/95 backdrop-blur border-t border-white/5 grid grid-cols-2 z-40 absolute bottom-0 w-full">
+            <button onclick="app.switchTab('home')" id="nav-home" class="nav-item active flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[10px] font-medium">홈</span>
+            </button>
+            <button onclick="app.switchTab('cart')" id="nav-cart" class="nav-item flex flex-col items-center justify-center gap-1 relative">
+                <i class="fa-solid fa-basket-shopping text-xl"></i>
+                <span class="text-[10px] font-medium">장바구니</span>
+                <div id="nav-cart-badge" class="absolute top-2 right-[42%] w-1.5 h-1.5 bg-amber-500 rounded-full hidden"></div>
+            </button>
+        </nav>
+
+        <!-- 재료 보기 바텀 시트 -->
+        <div id="ingredient-sheet" class="bottom-sheet absolute bottom-0 left-0 w-full bg-zinc-900 rounded-t-[32px] z-50 h-[65%] flex flex-col shadow-2xl border-t border-white/5">
+            <!-- 핸들바 -->
+            <div class="w-full flex justify-center pt-4 pb-2" onclick="app.closeSheet()">
+                <div class="w-10 h-1 bg-gray-700 rounded-full opacity-50"></div>
+            </div>
+            
+            <!-- 시트 헤더 -->
+            <div class="px-6 pb-4 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-amber-400 font-bold mb-0.5" id="sheet-level-text">난이도 하</p>
+                    <h3 id="sheet-title" class="text-2xl font-bold text-white leading-tight">요리 이름</h3>
+                </div>
+                <button onclick="app.addAllIngredients()" class="btn-press bg-white text-black text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-200 transition">
+                    전체 담기
+                </button>
+            </div>
+
+            <!-- 재료 리스트 -->
+            <div id="sheet-ingredients" class="flex-1 overflow-y-auto px-5 pb-10 space-y-3">
+                <!-- JS 렌더링 -->
+            </div>
+        </div>
+
+        <!-- 배경 딤 (바텀 시트용) -->
+        <div id="backdrop" onclick="app.closeSheet()" class="absolute inset-0 bg-black/80 z-40 hidden transition-opacity duration-300 backdrop-blur-sm"></div>
+
+        <!-- 토스트 메시지 -->
+        <div id="toast-container" class="absolute top-12 left-1/2 transform -translate-x-1/2 z-[60] w-full px-6 pointer-events-none flex flex-col items-center"></div>
+
+    </div>
+
+    <script>
+        // --- 1. 데이터 (소고기 카레 단일 레시피 + 유튜브 링크) ---
+        const RECIPES = [
+            {
+                id: 1,
+                title: "실패 없는 소고기 카레",
+                description: "재료 4개로 끝내는 깊은 맛. 밥 두 공기 순삭 보장합니다.",
+                // 유튜브 쇼츠 ID 추출 (cN06rKfU3HY)
+                // autoplay=1: 자동재생, mute=1: 음소거(자동재생 필수조건), loop=1: 반복, playlist: 반복을 위한 ID 재입력
+                // controls=0: 컨트롤 숨김, playsinline=1: 인라인 재생
+                youtubeEmbedUrl: "https://www.youtube.com/embed/cN06rKfU3HY?autoplay=1&mute=1&controls=0&loop=1&playlist=cN06rKfU3HY&playsinline=1&rel=0&modestbranding=1", 
+                level: "난이도 하 (라면급)",
+                ingredients: [
+                    { name: "양파", unit: "필수", price: 3500, link: "https://link.coupang.com/a/c5CXMg" },
+                    { name: "당근", unit: "2개", price: 2800, link: "https://link.coupang.com/a/c5CYAb" },
+                    { name: "소고기", unit: "1팩", price: 12900, link: "https://link.coupang.com/a/c5CZbA" },
+                    { name: "고형카레", unit: "1개", price: 4500, link: "https://link.coupang.com/a/c5CZJz" }
+                ]
+            }
+        ];
+
+        // --- 2. 앱 로직 ---
+        class RecipeApp {
+            constructor() {
+                this.cart = JSON.parse(localStorage.getItem('recipeCart')) || [];
+                this.currentRecipeId = null;
+                this.init();
+            }
+
+            init() {
+                this.renderFeed();
+                this.updateCartUI();
+                // 유튜브 iframe 사용 시 IntersectionObserver 자동 재생 로직은 iframe 내부 제어가 어려우므로 
+                // 'autoplay=1' 파라미터에 의존합니다.
+            }
+
+            // 피드 렌더링 (Iframe 적용)
+            renderFeed() {
+                const container = document.getElementById('main-content');
+                container.innerHTML = RECIPES.map(recipe => `
+                    <div class="w-full h-full snap-center relative bg-black flex items-center justify-center overflow-hidden" data-id="${recipe.id}">
+                        
+                        <!-- 유튜브 Iframe (배경) -->
+                        <iframe 
+                            src="${recipe.youtubeEmbedUrl}" 
+                            title="${recipe.title}"
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            allowfullscreen
+                            class="youtube-background">
+                        </iframe>
+
+                        <!-- 터치 스크롤 레이어 (iframe 위를 덮어서 스크롤 가능하게 함) -->
+                        <div class="scroll-touch-layer"></div>
+                        
+                        <!-- 하단 정보 오버레이 (z-index 높음) -->
+                        <div class="absolute inset-0 video-overlay flex flex-col justify-end px-5 pb-[90px] z-10">
+                            <div class="pointer-events-auto transition-transform duration-300 hover:scale-[1.01]">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="bg-amber-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">Recipe</span>
+                                    <span class="text-xs text-amber-300 font-medium drop-shadow-md">${recipe.level}</span>
+                                </div>
+                                <h2 class="text-3xl font-bold text-white leading-tight mb-2 drop-shadow-lg tracking-tight">${recipe.title}</h2>
+                                <p class="text-gray-200 text-sm mb-5 line-clamp-2 drop-shadow-md font-light opacity-90">${recipe.description}</p>
+                                
+                                <button onclick="app.openSheet(${recipe.id})" class="btn-press w-full bg-white text-black font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg">
+                                    <span class="text-sm">재료 보고 담기</span>
+                                    <i class="fa-solid fa-chevron-up text-xs mt-0.5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 우측 액션 버튼 (z-index 높음) -->
+                        <div class="absolute right-4 bottom-[100px] flex flex-col gap-5 pointer-events-auto items-center z-10">
+                            <button onclick="app.toggleLike(this)" class="group flex flex-col items-center gap-1">
+                                <div class="w-11 h-11 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 transition group-active:scale-90">
+                                    <i class="fa-solid fa-heart text-white text-xl transition group-hover:text-red-500"></i>
+                                </div>
+                                <span class="text-[10px] font-medium drop-shadow">찜</span>
+                            </button>
+                            <button onclick="window.open('https://www.youtube.com/shorts/cN06rKfU3HY', '_blank')" class="group flex flex-col items-center gap-1">
+                                <div class="w-11 h-11 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 transition group-active:scale-90">
+                                    <i class="fa-brands fa-youtube text-white text-xl"></i>
+                                </div>
+                                <span class="text-[10px] font-medium drop-shadow">원본</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 바텀 시트
+            openSheet(recipeId) {
+                const recipe = RECIPES.find(r => r.id === recipeId);
+                if (!recipe) return;
+
+                this.currentRecipeId = recipeId;
+                document.getElementById('sheet-title').innerText = recipe.title;
+                document.getElementById('sheet-level-text').innerText = recipe.level;
+                
+                const list = document.getElementById('sheet-ingredients');
+                list.innerHTML = recipe.ingredients.map((ing) => {
+                    const isInCart = this.cart.some(item => item.link === ing.link); 
+                    return `
+                    <div class="flex items-center justify-between bg-black/20 p-3 rounded-2xl border border-white/5">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-11 h-11 bg-white/5 rounded-xl flex items-center justify-center text-xl border border-white/5">
+                                🍽️
+                            </div>
+                            <div>
+                                <p class="font-bold text-white text-sm">${ing.name}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">${ing.unit} <span class="mx-1">·</span> 약 ${ing.price.toLocaleString()}원</p>
+                            </div>
+                        </div>
+                        <button onclick="app.toggleIngredient('${ing.name}', ${ing.price}, '${ing.link}', this)" 
+                            class="btn-press w-9 h-9 rounded-full flex items-center justify-center transition-all ${isInCart ? 'bg-amber-400 text-black' : 'bg-white/10 text-white hover:bg-white/20'}">
+                            <i class="fa-solid ${isInCart ? 'fa-check' : 'fa-plus'} text-sm"></i>
+                        </button>
+                    </div>
+                `}).join('');
+
+                document.getElementById('ingredient-sheet').classList.add('active');
+                document.getElementById('backdrop').classList.remove('hidden');
+            }
+
+            closeSheet() {
+                document.getElementById('ingredient-sheet').classList.remove('active');
+                document.getElementById('backdrop').classList.add('hidden');
+            }
+
+            toggleIngredient(name, price, link, btn) {
+                const idx = this.cart.findIndex(item => item.link === link);
+                
+                if (idx > -1) {
+                    this.cart.splice(idx, 1);
+                    btn.className = "btn-press w-9 h-9 rounded-full flex items-center justify-center transition-all bg-white/10 text-white hover:bg-white/20";
+                    btn.innerHTML = '<i class="fa-solid fa-plus text-sm"></i>';
+                    this.showToast(`${name} 뺐습니다`);
+                } else {
+                    this.cart.push({ name, price, link });
+                    btn.className = "btn-press w-9 h-9 rounded-full flex items-center justify-center transition-all bg-amber-400 text-black";
+                    btn.innerHTML = '<i class="fa-solid fa-check text-sm"></i>';
+                    this.showToast(`${name} 담았습니다`);
+                }
+                this.saveCart();
+            }
+
+            addAllIngredients() {
+                const recipe = RECIPES.find(r => r.id === this.currentRecipeId);
+                if (!recipe) return;
+                
+                let count = 0;
+                recipe.ingredients.forEach(ing => {
+                    if (!this.cart.some(item => item.link === ing.link)) {
+                        this.cart.push({ name: ing.name, price: ing.price, link: ing.link });
+                        count++;
+                    }
+                });
+                this.saveCart();
+                this.closeSheet();
+                if(count > 0) this.showToast(`${count}개 재료를 모두 담았습니다!`);
+                else this.showToast("이미 모든 재료가 담겨있습니다.");
+            }
+
+            saveCart() {
+                localStorage.setItem('recipeCart', JSON.stringify(this.cart));
+                this.updateCartUI();
+            }
+
+            updateCartUI() {
+                const badge = document.getElementById('cart-count-badge');
+                const navBadge = document.getElementById('nav-cart-badge');
+                const list = document.getElementById('cart-items');
+                const totalEl = document.getElementById('total-estimated-price');
+
+                badge.innerText = this.cart.length;
+                if (this.cart.length > 0) navBadge.classList.remove('hidden');
+                else navBadge.classList.add('hidden');
+
+                if (this.cart.length === 0) {
+                    list.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-64 opacity-30">
+                            <i class="fa-solid fa-basket-shopping text-5xl mb-4"></i>
+                            <p class="text-sm">장바구니가 비었습니다</p>
+                        </div>`;
+                    totalEl.innerText = "0원";
+                } else {
+                    let total = 0;
+                    list.innerHTML = this.cart.map((item, idx) => {
+                        total += item.price;
+                        return `
+                        <div class="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center text-lg">
+                                    📦
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-sm text-white">${item.name}</span>
+                                    <button onclick="window.open('${item.link}', '_blank')" class="text-[10px] text-amber-400 text-left mt-1 hover:underline flex items-center">
+                                        구매 링크 열기 <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[8px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="app.removeFromCart(${idx})" class="text-gray-500 hover:text-red-400 p-2 transition">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `}).join('');
+                    totalEl.innerText = `${total.toLocaleString()}원`;
+                }
+            }
+
+            removeFromCart(idx) {
+                this.cart.splice(idx, 1);
+                this.saveCart();
+            }
+
+            clearCart() {
+                if (confirm("장바구니를 비우시겠습니까?")) {
+                    this.cart = [];
+                    this.saveCart();
+                }
+            }
+
+            switchTab(tab) {
+                const home = document.getElementById('main-content');
+                const cart = document.getElementById('cart-view');
+                const navH = document.getElementById('nav-home');
+                const navC = document.getElementById('nav-cart');
+
+                if (tab === 'home') {
+                    home.classList.remove('hidden');
+                    cart.classList.add('hidden');
+                    navH.classList.add('active');
+                    navC.classList.remove('active');
+                } else {
+                    home.classList.add('hidden');
+                    cart.classList.remove('hidden');
+                    navH.classList.remove('active');
+                    navC.classList.add('active');
+                    this.updateCartUI();
+                }
+            }
+
+            buyAll() {
+                if (this.cart.length === 0) {
+                    this.showToast("담긴 상품이 없습니다.");
+                    return;
+                }
+                
+                const confirmMsg = `총 ${this.cart.length}개의 상품 구매 페이지를 엽니다.\n(팝업 차단이 되어있으면 하나만 열릴 수 있습니다.)`;
+                if(confirm(confirmMsg)) {
+                    this.cart.forEach(item => {
+                        window.open(item.link, '_blank');
+                    });
+                    this.showToast("구매 페이지들을 열었습니다.");
+                }
+            }
+
+            showToast(msg) {
+                const container = document.getElementById('toast-container');
+                const el = document.createElement('div');
+                el.className = 'toast bg-zinc-800/90 backdrop-blur border border-white/10 text-white text-xs font-medium px-4 py-3 rounded-full shadow-2xl mb-2 flex items-center gap-2';
+                el.innerHTML = `<i class="fa-solid fa-check text-amber-400"></i> ${msg}`;
+                container.appendChild(el);
+                setTimeout(() => el.remove(), 3000);
+            }
+
+            toggleLike(btn) {
+                const i = btn.querySelector('i');
+                if (i.classList.contains('text-white')) {
+                    i.classList.remove('text-white');
+                    i.classList.add('text-red-500');
+                    this.showToast("찜 목록에 추가됨");
+                } else {
+                    i.classList.add('text-white');
+                    i.classList.remove('text-red-500');
+                }
+            }
+            
+            toggleFilter() {
+                this.showToast("필터 기능은 준비 중입니다.");
+            }
+        }
+
+        const app = new RecipeApp();
+        window.app = app;
+    </script>
+</body>
+</html>
