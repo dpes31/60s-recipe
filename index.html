@@ -2,313 +2,280 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manager Recipe Test Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Premium Recipe Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
         
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #0f0f0f; /* Deep Dark Background */
+            font-family: 'Pretendard', sans-serif;
+            background-color: #121212;
             color: #ffffff;
-            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333; 
-            border-radius: 3px;
+        /* Safe Area for iPhone X+ */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* 이미지 로딩 애니메이션 */
-        .image-placeholder {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        /* Hide Scrollbar but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        /* 토스트 메시지 애니메이션 */
-        .toast-enter {
-            transform: translateY(100%);
-            opacity: 0;
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .toast-enter-active {
-            transform: translateY(0);
-            opacity: 1;
-            transition: all 0.3s ease-out;
+
+        /* Smooth Fade In */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
         }
-        .toast-exit {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .toast-exit-active {
-            transform: translateY(100%);
-            opacity: 0;
-            transition: all 0.3s ease-in;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="relative min-h-screen flex flex-col">
+<body class="min-h-screen bg-[#121212] text-white relative overflow-x-hidden">
 
-    <!-- 상단 헤더 (투명 -> 스크롤시 불투명 처리 가능, 현재는 깔끔하게 고정) -->
-    <header class="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center">
-        <div>
-            <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider border border-emerald-500/30 px-2 py-0.5 rounded-full bg-emerald-500/10">Admin Mode</span>
-            <h1 class="text-lg font-bold mt-0.5">레시피 구현 테스트</h1>
-        </div>
-        <button class="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <i data-lucide="settings" class="w-5 h-5 text-gray-400"></i>
-        </button>
-    </header>
-
-    <!-- 메인 컨텐츠 영역 -->
-    <!-- pb-32는 하단 고정 버튼이 컨텐츠를 가리지 않도록 여백을 줍니다 (모바일 스크롤 해결 핵심) -->
-    <main class="flex-1 pt-20 pb-40 px-5 max-w-2xl mx-auto w-full">
+    <!-- 1. 몰입형 비디오/이미지 헤더 (모바일 최적화) -->
+    <div class="relative w-full h-[45vh] overflow-hidden">
+        <!-- 그라데이션 오버레이 (텍스트 가독성 확보) -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#121212] z-10"></div>
         
-        <!-- 1. 영상 테스트 영역 -->
-        <section class="mb-8">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-xl font-bold">조리 영상 (Youtube/Shorts)</h2>
-                <span class="text-xs text-gray-500">Ratio 16:9 Check</span>
+        <!-- 관리자 컨트롤 (상단 고정) -->
+        <div class="absolute top-0 left-0 right-0 z-20 p-6 pt-12 flex justify-between items-start">
+            <button class="bg-black/30 backdrop-blur-md p-2 rounded-full border border-white/10 active:scale-95 transition-transform">
+                <i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
+            </button>
+            <div class="flex gap-3">
+                <span class="bg-emerald-500/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-lg">ADMIN TEST</span>
+                <button class="bg-black/30 backdrop-blur-md p-2 rounded-full border border-white/10 active:scale-95 transition-transform">
+                    <i data-lucide="share-2" class="w-5 h-5 text-white"></i>
+                </button>
             </div>
-            <!-- 영상 플레이어 래퍼 (Aspect Ratio 유지) -->
-            <div class="relative w-full aspect-video bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border border-white/5 group cursor-pointer">
-                <!-- 실제 구현시에는 iframe이 들어갑니다 -->
-                <img src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" 
-                     alt="Video Thumbnail" 
-                     class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-300">
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <i data-lucide="play" class="w-6 h-6 text-white fill-current ml-1"></i>
+        </div>
+
+        <!-- 메인 비디오 썸네일 (이전 버전에서 안보이던 문제 해결을 위해 background-image 사용) -->
+        <div class="w-full h-full bg-cover bg-center transform scale-105" 
+             style="background-image: url('https://images.unsplash.com/photo-1556910103-1c02745a30bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
+             <!-- Play Button Overlay -->
+             <div class="absolute inset-0 z-10 flex items-center justify-center">
+                <button class="group relative flex items-center justify-center">
+                    <div class="absolute w-16 h-16 bg-emerald-500/30 rounded-full animate-ping"></div>
+                    <div class="relative w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 group-active:scale-95 transition-all">
+                        <i data-lucide="play" class="w-6 h-6 text-white fill-white ml-1"></i>
                     </div>
+                </button>
+             </div>
+        </div>
+    </div>
+
+    <!-- 2. 메인 컨텐츠 (바텀 시트 스타일) -->
+    <main class="relative z-20 -mt-10 px-6 pb-40">
+        <!-- 타이틀 섹션 -->
+        <div class="mb-8 fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-emerald-400 text-sm font-semibold tracking-wider">ITALIAN RECIPE</span>
+                <div class="h-1 w-1 rounded-full bg-gray-500"></div>
+                <span class="text-gray-400 text-sm">20 min</span>
+            </div>
+            <h1 class="text-3xl font-bold leading-tight mb-4">클래식 바질 페스토 파스타<br><span class="text-gray-500 text-xl font-normal">Chef. Gordon Style</span></h1>
+            
+            <div class="flex items-center justify-between p-4 bg-[#1E1E1E] rounded-2xl border border-white/5">
+                <div class="text-center">
+                    <span class="block text-gray-400 text-xs mb-1">난이도</span>
+                    <span class="font-medium">중급</span>
+                </div>
+                <div class="w-px h-8 bg-white/10"></div>
+                <div class="text-center">
+                    <span class="block text-gray-400 text-xs mb-1">총 비용</span>
+                    <span class="font-medium text-emerald-400">42,500원</span>
+                </div>
+                <div class="w-px h-8 bg-white/10"></div>
+                <div class="text-center">
+                    <span class="block text-gray-400 text-xs mb-1">칼로리</span>
+                    <span class="font-medium">580 kcal</span>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 2. 재료 리스트 (Coupang 연동 테스트) -->
-        <section>
-            <div class="flex items-end justify-between mb-4">
-                <div>
-                    <h2 class="text-xl font-bold">필요 재료</h2>
-                    <p class="text-sm text-gray-400 mt-1">총 5개 품목 / 예상 42,500원</p>
-                </div>
-                <button class="text-xs text-gray-500 underline decoration-gray-600 underline-offset-4">링크 일괄 점검</button>
-            </div>
+        <!-- 재료 섹션 헤더 -->
+        <div class="flex items-end justify-between mb-5 fade-in" style="animation-delay: 0.2s;">
+            <h2 class="text-xl font-bold">필요한 재료 <span class="text-emerald-500 ml-1">5</span></h2>
+            <button class="text-xs text-gray-500 flex items-center gap-1 active:text-emerald-400">
+                링크 점검 <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+            </button>
+        </div>
 
-            <!-- 재료 리스트 컨테이너 -->
-            <div id="ingredient-list" class="space-y-4">
-                <!-- 자바스크립트로 카드가 렌더링됩니다 -->
-            </div>
-        </section>
+        <!-- 재료 리스트 (카드형) -->
+        <div id="ingredient-list" class="space-y-3 fade-in" style="animation-delay: 0.3s;">
+            <!-- JS로 렌더링됨 -->
+        </div>
 
-        <!-- 하단 여백 확보용 (안전 장치) -->
-        <div class="h-10"></div>
+        <!-- 여백 (하단 버튼 가림 방지) -->
+        <div class="h-12"></div>
     </main>
 
-    <!-- 하단 고정 액션 바 (Floating Action Bar) -->
-    <!-- 그라데이션을 주어 떠있는 느낌 강조 -->
-    <div class="fixed bottom-0 left-0 right-0 z-50 p-5 bg-gradient-to-t from-black via-black to-transparent pointer-events-none">
-        <div class="max-w-2xl mx-auto w-full pointer-events-auto">
-            <!-- 총합계 요약 (옵션) -->
-            <div class="flex justify-between items-center px-2 mb-3">
-                 <span class="text-sm text-gray-300 font-medium">현재 담긴 금액</span>
-                 <span class="text-lg font-bold text-emerald-400" id="total-price">0원</span>
-            </div>
+    <!-- 3. 플로팅 바텀 액션 바 (Glassmorphism) -->
+    <div class="fixed bottom-0 left-0 right-0 z-50 glass safe-bottom">
+        <div class="px-6 py-4">
+            <div class="flex gap-3 items-center">
+                <!-- 장바구니 상태/초기화 -->
+                <div class="flex-shrink-0 relative">
+                    <button onclick="resetCart()" class="w-14 h-14 bg-[#2A2A2A] rounded-2xl flex items-center justify-center text-gray-400 border border-white/5 active:bg-[#333] transition-colors">
+                        <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                    </button>
+                    <!-- 뱃지 (선택된 개수) -->
+                    <span id="cart-count" class="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                </div>
 
-            <!-- 메인 버튼 그룹 -->
-            <div class="flex gap-3">
-                <button onclick="resetCart()" class="flex-shrink-0 w-14 h-14 bg-gray-800 rounded-2xl flex items-center justify-center border border-gray-700 shadow-lg active:scale-95 transition-transform">
-                    <i data-lucide="rotate-ccw" class="w-6 h-6 text-gray-400"></i>
-                </button>
-                
-                <button onclick="addAllToCart()" class="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 active:scale-95 transition-all">
-                    <span>모든 재료 한 번에 담기</span>
-                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <!-- 전체 담기 버튼 -->
+                <button onclick="addAllToCart()" class="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl flex items-center justify-center gap-2 text-white font-bold text-lg shadow-lg shadow-emerald-900/40 active:scale-[0.98] transition-all">
+                    <span id="main-btn-text">모든 재료 담기</span>
+                    <span class="w-px h-4 bg-white/20 mx-1"></span>
+                    <span id="total-price" class="font-medium">0원</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 토스트 메시지 -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800/90 backdrop-blur border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-[60] opacity-0 pointer-events-none transition-opacity duration-300">
-        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
-        <span id="toast-message" class="text-sm font-medium">메시지</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1E1E1E]/95 backdrop-blur border border-white/10 px-5 py-3 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300 translate-y-4">
+        <div class="bg-emerald-500/20 p-1.5 rounded-full">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+        </div>
+        <p id="toast-msg" class="text-sm font-medium text-white">장바구니에 담겼습니다.</p>
     </div>
 
     <script>
-        // 아이콘 초기화
-        lucide.createIcons();
-
-        // 샘플 데이터 (관리자 테스트용)
+        // 데이터
         const ingredients = [
-            { 
-                id: 1, 
-                name: "유기농 엑스트라 버진 올리브오일", 
-                subtext: "500ml, 1개",
-                price: 18500, 
-                img: "https://images.unsplash.com/photo-1474979266404-7cadd9385a53?auto=format&fit=crop&w=200&h=200&q=80",
-                link: "#" // 쿠팡 링크 예정
-            },
-            { 
-                id: 2, 
-                name: "프레시 바질 (생바질)", 
-                subtext: "10g, 2팩",
-                price: 4200, 
-                img: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=200&h=200&q=80",
-                link: "#"
-            },
-            { 
-                id: 3, 
-                name: "이탈리아산 파르미지아노 레지아노", 
-                subtext: "200g, 1개",
-                price: 12800, 
-                img: "https://images.unsplash.com/photo-1632340603655-85d581494086?auto=format&fit=crop&w=200&h=200&q=80",
-                link: "#"
-            },
-            { 
-                id: 4, 
-                name: "통마늘 (국내산)", 
-                subtext: "300g, 1망",
-                price: 3500, 
-                img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=200&h=200&q=80",
-                link: "#"
-            },
-            { 
-                id: 5, 
-                name: "데 체코 스파게티 면", 
-                subtext: "500g, 3개",
-                price: 3500, 
-                img: "https://images.unsplash.com/photo-1595855728531-049750a63332?auto=format&fit=crop&w=200&h=200&q=80",
-                link: "#"
-            }
+            { id: 1, name: "엑스트라 버진 올리브오일", brand: "De Cecco", price: 18500, img: "https://images.unsplash.com/photo-1474979266404-7cadd9385a53?auto=format&fit=crop&w=200&h=200&q=80" },
+            { id: 2, name: "프레시 생바질", brand: "팜프레시", price: 4200, img: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=200&h=200&q=80" },
+            { id: 3, name: "파르미지아노 레지아노", brand: "Zanetti", price: 12800, img: "https://images.unsplash.com/photo-1632340603655-85d581494086?auto=format&fit=crop&w=200&h=200&q=80" },
+            { id: 4, name: "국내산 통마늘", brand: "농협", price: 3500, img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=200&h=200&q=80" },
+            { id: 5, name: "스파게티 면 No.12", brand: "De Cecco", price: 3500, img: "https://images.unsplash.com/photo-1595855728531-049750a63332?auto=format&fit=crop&w=200&h=200&q=80" }
         ];
 
-        let cart = new Set(); // 장바구니 상태 (중복 방지)
+        let cart = new Set();
 
-        function renderIngredients() {
+        function render() {
             const container = document.getElementById('ingredient-list');
             container.innerHTML = '';
+            let total = 0;
 
             ingredients.forEach(item => {
                 const isSelected = cart.has(item.id);
-                const cardClass = isSelected 
-                    ? 'border-emerald-500/50 bg-emerald-900/10' 
-                    : 'border-white/5 bg-gray-900 hover:bg-gray-800';
+                if(isSelected) total += item.price;
+
+                const cardStyle = isSelected 
+                    ? 'bg-[#1E1E1E] border-emerald-500/50 ring-1 ring-emerald-500/30' 
+                    : 'bg-[#1E1E1E] border-white/5';
                 
-                const btnClass = isSelected
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-emerald-500 hover:text-emerald-500';
+                const btnStyle = isSelected
+                    ? 'bg-emerald-500 text-white border-emerald-500'
+                    : 'bg-[#2A2A2A] text-gray-400 border-white/5';
 
-                const btnIcon = isSelected ? 'check' : 'plus';
-
-                const html = `
-                    <div class="flex items-center p-4 rounded-2xl border transition-all duration-300 ${cardClass} group">
-                        <!-- 이미지 영역 -->
-                        <div class="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-800 mr-4">
-                            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        </div>
-
-                        <!-- 텍스트 영역 -->
-                        <div class="flex-1 min-w-0 mr-2">
-                            <h3 class="text-base font-medium text-white truncate leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-500 mb-2">${item.subtext}</p>
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-emerald-400">${item.price.toLocaleString()}원</span>
-                                <a href="${item.link}" target="_blank" class="text-[10px] px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700 hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center gap-1">
-                                    쿠팡 <i data-lucide="external-link" class="w-3 h-3"></i>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- 개별 담기 버튼 -->
-                        <button onclick="toggleItem(${item.id})" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 ${btnClass}">
-                            <i data-lucide="${btnIcon}" class="w-5 h-5"></i>
-                        </button>
+                container.innerHTML += `
+                <div class="flex items-center p-3 rounded-2xl border ${cardStyle} transition-all duration-300 active:scale-[0.99]">
+                    <!-- 이미지 -->
+                    <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-[#2A2A2A] flex-shrink-0">
+                        <img src="${item.img}" class="w-full h-full object-cover" alt="${item.name}">
                     </div>
+                    
+                    <!-- 텍스트 -->
+                    <div class="flex-1 ml-4 mr-2 min-w-0">
+                        <div class="text-xs text-gray-500 mb-0.5">${item.brand}</div>
+                        <h3 class="font-medium text-white truncate text-[15px] mb-1">${item.name}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-emerald-400">${item.price.toLocaleString()}원</span>
+                            <a href="#" class="text-[10px] text-gray-500 underline decoration-gray-600">쿠팡보기</a>
+                        </div>
+                    </div>
+
+                    <!-- 개별 버튼 -->
+                    <button onclick="toggle(${item.id})" class="w-10 h-10 rounded-xl flex items-center justify-center border ${btnStyle} transition-all active:scale-90">
+                        <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-5 h-5"></i>
+                    </button>
+                </div>
                 `;
-                container.insertAdjacentHTML('beforeend', html);
             });
+
+            // 하단바 업데이트
+            const countBadge = document.getElementById('cart-count');
+            if(cart.size > 0) {
+                countBadge.innerText = cart.size;
+                countBadge.classList.remove('hidden');
+                document.getElementById('main-btn-text').innerText = cart.size === ingredients.length ? "구매하러 가기" : "나머지 모두 담기";
+            } else {
+                countBadge.classList.add('hidden');
+                document.getElementById('main-btn-text').innerText = "모든 재료 담기";
+                // 전체 합계 계산 (선택 안했을 땐 전체 가격 보여주기)
+                total = ingredients.reduce((acc, cur) => acc + cur.price, 0);
+            }
+            
+            document.getElementById('total-price').innerText = total.toLocaleString() + "원";
             lucide.createIcons();
-            updateTotal();
         }
 
-        // 개별 아이템 토글
-        function toggleItem(id) {
-            if (cart.has(id)) {
+        function toggle(id) {
+            if(cart.has(id)) {
                 cart.delete(id);
-                showToast("장바구니에서 제외되었습니다.");
+                showToast('장바구니에서 뺐습니다.');
             } else {
                 cart.add(id);
-                showToast("장바구니에 담겼습니다.");
+                showToast('장바구니에 담았습니다.');
             }
-            renderIngredients();
+            render();
         }
 
-        // 전체 담기
         function addAllToCart() {
-            if (cart.size === ingredients.length) {
-                showToast("이미 모든 상품이 담겨있습니다.");
+            if(cart.size === ingredients.length) {
+                // 이미 다 담겼으면 결제 페이지 로직 등 (여기선 토스트만)
+                showToast('이미 모든 재료가 담겨있습니다.');
                 return;
             }
-            ingredients.forEach(item => cart.add(item.id));
-            renderIngredients();
-            showToast("모든 재료가 장바구니에 담겼습니다!");
-            
-            // 버튼 흔들림 효과
-            const btn = document.querySelector('button[onclick="addAllToCart()"]');
-            btn.classList.add('animate-bounce');
-            setTimeout(() => btn.classList.remove('animate-bounce'), 1000);
+            ingredients.forEach(i => cart.add(i.id));
+            render();
+            showToast('모든 재료를 담았습니다!');
         }
 
-        // 초기화
         function resetCart() {
             if(cart.size === 0) return;
             cart.clear();
-            renderIngredients();
-            showToast("장바구니를 비웠습니다.");
+            render();
+            showToast('초기화되었습니다.');
         }
 
-        // 하단 가격 업데이트
-        function updateTotal() {
-            let total = 0;
-            cart.forEach(id => {
-                const item = ingredients.find(i => i.id === id);
-                if(item) total += item.price;
-            });
-            document.getElementById('total-price').innerText = total.toLocaleString() + "원";
-        }
-
-        // 토스트 메시지 표시
-        let toastTimeout;
+        let toastTimer;
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            const msgEl = document.getElementById('toast-message');
+            document.getElementById('toast-msg').innerText = msg;
             
-            msgEl.innerText = msg;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translate(-50%, 0)';
+            toast.classList.remove('opacity-0', 'translate-y-4');
             
-            if (toastTimeout) clearTimeout(toastTimeout);
-            
-            toastTimeout = setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translate(-50%, -20px)'; // 살짝 위로 사라짐
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
             }, 2000);
         }
 
-        // 초기 렌더링
-        renderIngredients();
-
+        // 초기실행
+        render();
+        lucide.createIcons();
     </script>
 </body>
 </html>
