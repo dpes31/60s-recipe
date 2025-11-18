@@ -2,386 +2,427 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>극효율 레시피 - 요리 & 장보기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>극효율 레시피 (Admin Test)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pretendard 폰트 적용 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        /* 기본 설정 */
-        body {
-            background-color: #f3f4f6; /* 배경 밝은 회색 */
-            color: #111;
-            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            overflow: hidden; /* 앱 컨테이너 외 스크롤 방지 */
+        /* --- Design System --- */
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent: #fbbf24; /* Amber-400 */
+            --accent-hover: #f59e0b;
         }
 
-        /* 아이폰 노치 대응 안전 영역 */
-        .safe-top { padding-top: env(safe-area-inset-top); }
-        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 (앱 컨테이너 내부 스크롤) */
+        }
 
-        /* 스크롤바 숨기기 */
+        /* Scrollbar Hide */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 체크박스 커스텀 */
-        .custom-checkbox:checked {
-            background-color: #f59e0b; /* amber-500 */
-            border-color: #f59e0b;
-            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+        /* Image/Video Overlay Gradient */
+        .gradient-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.6) 70%, var(--bg-primary) 100%);
         }
 
-        /* 유튜브 래퍼: 9:16 비율 유지하며 화면 상단 점유 */
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            height: 55vh; /* 화면의 55% 차지 */
-            background: #000;
-            overflow: hidden;
+        /* Custom Checkbox/Selection Style */
+        .item-card {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
         }
-        .video-iframe {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            transform: translate(-50%, -50%) scale(1.02); /* 약간 확대해 테두리 제거 */
-            border: none;
+        .item-card.selected {
+            background-color: #27272a;
+            border-color: var(--accent);
+        }
+        .item-card.selected .check-circle {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
         }
 
-        /* 하단 컨텐츠 영역 (둥근 모서리) */
-        .content-sheet {
-            margin-top: -20px; /* 비디오 위로 살짝 올라오게 */
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            background: white;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-            height: 45vh; /* 나머지 영역 */
-            display: flex;
-            flex-direction: column;
-        }
+        /* Admin Modal Animation */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease-in; }
 
-        /* Toast 애니메이션 */
-        @keyframes slide-up {
-            from { transform: translate(-50%, 20px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
-        }
-        .toast { animation: slide-up 0.3s ease-out forwards; }
-        
-        /* 탭바 활성화 효과 */
-        .tab-active { color: #111; font-weight: 600; }
-        .tab-inactive { color: #9ca3af; }
+        /* Safe Area for iPhone */
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="h-screen w-full flex justify-center bg-gray-100">
+<body class="h-[100dvh] w-full flex justify-center items-center bg-black">
 
-    <!-- 모바일 앱 컨테이너 -->
-    <div id="app-container" class="relative w-full h-full max-w-md bg-white shadow-xl overflow-hidden flex flex-col">
+    <!-- App Container -->
+    <div id="app-container" class="relative w-full h-full max-w-md bg-neutral-950 shadow-2xl overflow-hidden flex flex-col">
         
-        <!-- 1. 상단 헤더 (고정) -->
-        <header class="absolute top-0 left-0 w-full z-30 px-4 py-3 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent safe-top">
-            <div class="text-white font-bold text-lg flex items-center gap-2 drop-shadow-md">
-                <i class="fa-solid fa-utensils text-amber-400"></i> 극효율 레시피
+        <!-- Header (Fixed) -->
+        <header class="absolute top-0 left-0 w-full z-30 px-5 py-4 flex justify-between items-start pt-safe">
+            <div class="flex flex-col">
+                <span class="text-amber-400 text-[10px] font-bold tracking-widest uppercase mb-0.5">Premium Recipe</span>
+                <h1 class="text-white text-xl font-bold drop-shadow-md flex items-center gap-2">
+                    극효율 레시피 <span class="bg-white/20 text-[10px] px-1.5 py-0.5 rounded text-white/90 font-normal">Admin</span>
+                </h1>
             </div>
-            <div class="flex gap-3">
-                <button class="text-white drop-shadow-md"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button onclick="app.toggleCartView()" class="relative text-white drop-shadow-md">
-                    <i class="fa-solid fa-basket-shopping text-xl"></i>
-                    <span id="header-cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
-                </button>
-            </div>
+            <!-- Admin Toggle Button -->
+            <button onclick="admin.openSettings()" class="bg-white/10 backdrop-blur-md border border-white/10 w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition shadow-lg">
+                <i class="fa-solid fa-gear"></i>
+            </button>
         </header>
 
-        <!-- 2. 메인 뷰 (홈) -->
-        <div id="view-home" class="flex-1 flex flex-col h-full relative">
+        <!-- Main Scroll Area -->
+        <main id="main-scroll" class="flex-1 overflow-y-auto scrollbar-hide pb-32 relative">
             
-            <!-- 영상 영역 -->
-            <div class="video-wrapper">
-                <!-- 유튜브 쇼츠 (자동재생, 뮤트) -->
-                <iframe class="video-iframe" 
-                    src="https://www.youtube.com/embed/cN06rKfU3HY?autoplay=1&mute=1&controls=0&loop=1&playlist=cN06rKfU3HY&playsinline=1&rel=0&modestbranding=1" 
-                    title="Recipe Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-                </iframe>
-                <!-- 영상 위 그라데이션 (텍스트 가독성용) -->
-                <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            <!-- 1. Video Hero Section -->
+            <div class="relative w-full h-[60vh] bg-black">
+                <div id="video-placeholder" class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-600">
+                    <i class="fa-brands fa-youtube text-4xl opacity-50"></i>
+                </div>
+                <!-- Iframe will be injected here -->
+                <div id="video-container" class="absolute inset-0 w-full h-full"></div>
                 
-                <!-- 영상 내부 정보 (타이틀) -->
-                <div class="absolute bottom-8 left-0 w-full px-5 pb-2 text-white pointer-events-none z-0">
-                   <span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-1 inline-block shadow-sm">난이도 하</span>
-                   <h1 class="text-2xl font-bold leading-tight drop-shadow-lg">실패 없는 소고기 카레</h1>
-                   <p class="text-sm opacity-90 drop-shadow-md mt-1">재료 4개면 끝! 1분 만에 장보기 완료.</p>
+                <!-- Gradient & Info -->
+                <div class="absolute inset-0 gradient-overlay pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-full px-6 pb-8 z-10 pointer-events-none">
+                    <div class="inline-block bg-amber-500 text-black text-[11px] font-bold px-2.5 py-1 rounded mb-2 shadow-lg">
+                        난이도: 하 (라면급)
+                    </div>
+                    <h2 id="display-title" class="text-3xl font-bold text-white leading-tight drop-shadow-lg">제목을 입력해주세요</h2>
+                    <p class="text-gray-300 text-sm mt-2 line-clamp-2 font-light">관리자 설정에서 내용을 수정하여 테스트하세요.</p>
                 </div>
             </div>
 
-            <!-- 하단 상세 정보 & 재료 리스트 -->
-            <div class="content-sheet">
-                <!-- 핸들바 -->
-                <div class="w-full flex justify-center pt-3 pb-1">
-                    <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto px-5 pb-24 scrollbar-hide">
-                    <!-- 섹션 헤더 -->
-                    <div class="flex justify-between items-end mb-4 mt-2 border-b border-gray-100 pb-3">
-                        <div>
-                            <h2 class="text-lg font-bold text-gray-900">필요한 재료 <span class="text-amber-500 text-sm font-normal ml-1" id="ingredient-count">4개</span></h2>
-                            <p class="text-xs text-gray-400 mt-0.5">체크하면 장바구니에 담깁니다</p>
-                        </div>
-                        <button onclick="app.toggleAllIngredients()" class="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition">
-                            전체 선택
-                        </button>
-                    </div>
-
-                    <!-- 재료 리스트 (여기에 렌더링) -->
-                    <div id="ingredient-list" class="space-y-3">
-                        <!-- JS로 채워짐 -->
-                    </div>
-                    
-                    <!-- 여백 -->
-                    <div class="h-10"></div>
-                </div>
-
-                <!-- 하단 고정 '구매하기' 버튼 -->
-                <div class="absolute bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] safe-bottom">
-                    <button onclick="app.buySelected()" id="main-buy-btn" class="w-full bg-amber-400 hover:bg-amber-500 text-black font-bold text-lg py-3.5 rounded-xl shadow-lg shadow-amber-400/20 transition transform active:scale-95 flex justify-between items-center px-6">
-                        <span>0원 구매하기</span>
-                        <span class="text-sm font-normal opacity-80">쿠팡 로켓배송 <i class="fa-solid fa-chevron-right text-xs ml-1"></i></span>
+            <!-- 2. Ingredients List Section -->
+            <div class="px-5 -mt-4 relative z-20">
+                <!-- List Header -->
+                <div class="flex justify-between items-center mb-4 px-1">
+                    <h3 class="text-lg font-bold text-white">필요한 재료 <span id="item-count" class="text-amber-400 ml-1">0</span></h3>
+                    <button onclick="app.toggleSelectAll()" class="text-xs font-medium text-gray-400 hover:text-white transition underline decoration-gray-600 underline-offset-4">
+                        전체 선택/해제
                     </button>
                 </div>
-            </div>
-        </div>
 
-        <!-- 3. 장바구니 뷰 (오버레이) -->
-        <div id="view-cart" class="absolute inset-0 bg-white z-40 translate-y-full transition-transform duration-300 flex flex-col">
-            <header class="px-4 py-3 border-b border-gray-100 flex justify-between items-center safe-top bg-white">
-                <h2 class="font-bold text-lg">장바구니</h2>
-                <button onclick="app.toggleCartView()" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </header>
-            
-            <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-                <!-- 카트 아이템 -->
-            </div>
-
-            <div class="p-4 border-t border-gray-100 bg-white safe-bottom pb-6">
-                <div class="flex justify-between mb-4">
-                    <span class="text-gray-500">총 결제 예상 금액</span>
-                    <span id="cart-total-price" class="font-bold text-xl text-gray-900">0원</span>
+                <!-- Dynamic List -->
+                <div id="ingredient-list" class="space-y-3">
+                    <!-- JS Rendered Items -->
                 </div>
-                <button onclick="app.checkout()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition">
-                    모두 구매하러 가기
-                </button>
+
+                <div class="h-10"></div> <!-- Spacer -->
+            </div>
+        </main>
+
+        <!-- 3. Sticky Footer Action Bar -->
+        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black via-neutral-900/95 to-transparent pt-10 pb-6 px-5 z-40 safe-pb">
+            <button onclick="app.buySelected()" id="buy-btn" class="w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] transition-all text-black font-bold text-lg h-14 rounded-2xl shadow-[0_0_20px_rgba(251,191,36,0.3)] flex items-center justify-between px-6 group">
+                <div class="flex flex-col items-start leading-none">
+                    <span class="text-[10px] font-semibold opacity-70 mb-1">쿠팡 로켓배송</span>
+                    <span id="total-price" class="text-lg font-extrabold">0원 담기</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold group-hover:mr-1 transition-all">구매하러 가기</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ADMIN SETTINGS MODAL (Hidden by default) -->
+        <!-- ========================================== -->
+        <div id="admin-modal" class="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center px-4">
+            <div class="bg-neutral-900 border border-white/10 w-full max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+                <!-- Header -->
+                <div class="px-5 py-4 border-b border-white/10 flex justify-between items-center bg-neutral-800">
+                    <h3 class="text-white font-bold text-lg"><i class="fa-solid fa-sliders mr-2 text-amber-400"></i>관리자 설정</h3>
+                    <button onclick="admin.closeSettings()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <!-- Form Content -->
+                <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                    <!-- 1. Video Config -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase">유튜브 쇼츠 ID</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="admin-video-id" placeholder="예: cN06rKfU3HY" 
+                                class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-amber-400 outline-none transition">
+                            <button onclick="admin.previewVideo()" class="bg-white/10 text-white px-3 rounded-xl whitespace-nowrap text-sm font-bold">확인</button>
+                        </div>
+                        <p class="text-[10px] text-gray-500">* 유튜브 URL 뒷부분의 ID만 입력하세요.</p>
+                    </div>
+
+                    <!-- 2. Title Config -->
+                     <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase">요리 제목</label>
+                        <input type="text" id="admin-recipe-title" placeholder="요리 제목 입력" 
+                            class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-amber-400 outline-none transition">
+                    </div>
+
+                    <!-- 3. Ingredients Config -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-gray-400 uppercase">재료 목록 관리</label>
+                            <button onclick="admin.addIngredientField()" class="text-xs bg-amber-400/20 text-amber-400 px-2 py-1 rounded hover:bg-amber-400/30">+ 추가</button>
+                        </div>
+                        <div id="admin-ing-list" class="space-y-3">
+                            <!-- Ingredient Inputs Rendered Here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="p-5 border-t border-white/10 bg-neutral-900">
+                    <div class="flex gap-3">
+                        <button onclick="admin.resetToDefault()" class="flex-1 bg-red-500/10 text-red-500 py-3 rounded-xl font-bold text-sm hover:bg-red-500/20">초기화</button>
+                        <button onclick="admin.saveAndClose()" class="flex-[2] bg-amber-400 text-black py-3 rounded-xl font-bold hover:bg-amber-500">저장 및 적용</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 토스트 메시지 -->
-        <div id="toast-container" class="absolute bottom-24 left-1/2 z-50 w-full pointer-events-none"></div>
+        <!-- Toast Notification -->
+        <div id="toast-container" class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[60] w-full pointer-events-none flex flex-col items-center px-4"></div>
 
     </div>
 
     <script>
-        // --- 데이터 ---
-        const RECIPE_DATA = {
-            id: 1,
+        // --- 기본 데이터 (초기값) ---
+        const DEFAULT_DATA = {
+            videoId: "cN06rKfU3HY",
             title: "실패 없는 소고기 카레",
             ingredients: [
-                { id: 'ing_1', name: "양파", desc: "필수 재료", price: 3500, link: "https://link.coupang.com/a/c5CXMg" },
-                { id: 'ing_2', name: "당근", desc: "2개입", price: 2800, link: "https://link.coupang.com/a/c5CYAb" },
-                { id: 'ing_3', name: "소고기 국거리", desc: "1팩 (300g)", price: 12900, link: "https://link.coupang.com/a/c5CZbA" },
-                { id: 'ing_4', name: "고형카레", desc: "약간 매운맛", price: 4500, link: "https://link.coupang.com/a/c5CZJz" }
+                { id: 'def_1', name: "양파", desc: "필수 재료", price: 3500, link: "https://link.coupang.com/a/c5CXMg" },
+                { id: 'def_2', name: "당근", desc: "2개입", price: 2800, link: "https://link.coupang.com/a/c5CYAb" },
+                { id: 'def_3', name: "소고기 국거리", desc: "1팩 (300g)", price: 12900, link: "https://link.coupang.com/a/c5CZbA" },
+                { id: 'def_4', name: "고형카레", desc: "약간 매운맛", price: 4500, link: "https://link.coupang.com/a/c5CZJz" }
             ]
         };
 
+        // --- App Logic ---
         class RecipeApp {
             constructor() {
-                // 로컬 스토리지에서 장바구니 불러오기 (ID 기준)
-                this.cartIds = JSON.parse(localStorage.getItem('myCartIds')) || [];
+                this.data = JSON.parse(localStorage.getItem('recipeAdminData')) || DEFAULT_DATA;
+                this.selectedIds = new Set(this.data.ingredients.map(i => i.id)); // 기본 전체 선택
                 this.init();
             }
 
             init() {
-                this.renderIngredients();
-                this.updateUI();
+                this.renderVideo();
+                this.renderTitle();
+                this.renderList();
+                this.updateFooter();
             }
 
-            // 재료 리스트 렌더링 (메인 화면)
-            renderIngredients() {
-                const container = document.getElementById('ingredient-list');
-                container.innerHTML = RECIPE_DATA.ingredients.map(ing => {
-                    const isChecked = this.cartIds.includes(ing.id);
+            renderVideo() {
+                const container = document.getElementById('video-container');
+                // 유튜브 쇼츠 모바일 최적화 파라미터
+                const params = "autoplay=1&mute=1&controls=0&loop=1&playlist=" + this.data.videoId + "&playsinline=1&rel=0&modestbranding=1";
+                container.innerHTML = `
+                    <iframe class="w-full h-full object-cover scale-[1.02] pointer-events-none" 
+                        src="https://www.youtube.com/embed/${this.data.videoId}?${params}" 
+                        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                    </iframe>
+                `;
+            }
+
+            renderTitle() {
+                document.getElementById('display-title').innerText = this.data.title;
+            }
+
+            renderList() {
+                const listEl = document.getElementById('ingredient-list');
+                document.getElementById('item-count').innerText = this.data.ingredients.length + "개";
+
+                if (this.data.ingredients.length === 0) {
+                    listEl.innerHTML = `<div class="text-center py-10 text-gray-600">등록된 재료가 없습니다.<br>관리자 설정에서 추가해주세요.</div>`;
+                    return;
+                }
+
+                listEl.innerHTML = this.data.ingredients.map(item => {
+                    const isSelected = this.selectedIds.has(item.id);
                     return `
-                    <div class="bg-white border border-gray-100 rounded-xl p-3 flex items-center justify-between shadow-sm hover:border-amber-200 transition cursor-pointer" onclick="app.toggleItem('${ing.id}')">
-                        <div class="flex items-center gap-3">
-                            <div class="relative">
-                                <input type="checkbox" id="chk-${ing.id}" ${isChecked ? 'checked' : ''} 
-                                    class="custom-checkbox w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer pointer-events-none">
+                    <div onclick="app.toggleItem('${item.id}')" 
+                        class="item-card relative flex items-center justify-between p-4 rounded-2xl bg-[#1c1c1e] border border-white/5 cursor-pointer group hover:bg-[#27272a] ${isSelected ? 'selected' : ''}">
+                        
+                        <!-- Left: Checkbox & Info -->
+                        <div class="flex items-center gap-4">
+                            <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-600 flex items-center justify-center transition-colors ${isSelected ? 'bg-amber-400 border-amber-400 text-black' : 'text-transparent'}">
+                                <i class="fa-solid fa-check text-xs font-bold"></i>
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800 text-sm leading-none mb-1">${ing.name}</p>
-                                <p class="text-xs text-gray-500">${ing.desc}</p>
+                                <h4 class="text-white font-bold text-base leading-tight">${item.name}</h4>
+                                <p class="text-gray-500 text-xs mt-1">${item.desc || '상세정보 없음'}</p>
                             </div>
                         </div>
+
+                        <!-- Right: Price & Link Icon -->
                         <div class="text-right">
-                            <p class="font-bold text-sm text-gray-900">${ing.price.toLocaleString()}원</p>
-                            <button onclick="event.stopPropagation(); window.open('${ing.link}')" class="text-[10px] text-gray-400 underline decoration-gray-300">상세보기</button>
+                            <div class="font-bold text-white text-sm mb-1">${parseInt(item.price).toLocaleString()}원</div>
+                            <button onclick="event.stopPropagation(); window.open('${item.link}')" class="text-[10px] text-gray-500 hover:text-amber-400 flex items-center justify-end gap-1 transition-colors">
+                                <span>확인</span> <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </button>
                         </div>
                     </div>
                     `;
                 }).join('');
             }
 
-            // 아이템 토글 (체크박스)
             toggleItem(id) {
-                if (this.cartIds.includes(id)) {
-                    this.cartIds = this.cartIds.filter(itemId => itemId !== id);
+                if (this.selectedIds.has(id)) {
+                    this.selectedIds.delete(id);
                 } else {
-                    this.cartIds.push(id);
-                    this.showToast("장바구니에 담겼습니다");
+                    this.selectedIds.add(id);
                 }
-                this.save();
-                this.updateUI();
+                this.renderList(); // Re-render for style update
+                this.updateFooter();
             }
 
-            // 전체 선택/해제
-            toggleAllIngredients() {
-                const allIds = RECIPE_DATA.ingredients.map(i => i.id);
-                const isAllSelected = allIds.every(id => this.cartIds.includes(id));
-
-                if (isAllSelected) {
-                    // 현재 레시피의 재료만 해제 (다른 레시피 재료 유지하려면 로직 수정 필요하지만 지금은 단일 레시피)
-                    this.cartIds = []; 
-                    this.showToast("전체 해제되었습니다");
+            toggleSelectAll() {
+                if (this.selectedIds.size === this.data.ingredients.length) {
+                    this.selectedIds.clear();
+                    this.showToast("전체 선택 해제");
                 } else {
-                    this.cartIds = [...allIds];
-                    this.showToast("모든 재료가 담겼습니다");
+                    this.data.ingredients.forEach(i => this.selectedIds.add(i.id));
+                    this.showToast("전체 선택 완료");
                 }
-                this.save();
-                this.updateUI();
+                this.renderList();
+                this.updateFooter();
             }
 
-            // UI 업데이트 (배지, 총액, 버튼 텍스트, 체크박스 상태)
-            updateUI() {
-                // 1. 메인 리스트 체크박스 동기화
-                RECIPE_DATA.ingredients.forEach(ing => {
-                    const chk = document.getElementById(`chk-${ing.id}`);
-                    if (chk) chk.checked = this.cartIds.includes(ing.id);
-                });
-
-                // 2. 계산
+            updateFooter() {
                 let total = 0;
                 let count = 0;
-                RECIPE_DATA.ingredients.forEach(ing => {
-                    if (this.cartIds.includes(ing.id)) {
-                        total += ing.price;
+                this.data.ingredients.forEach(i => {
+                    if (this.selectedIds.has(i.id)) {
+                        total += parseInt(i.price || 0);
                         count++;
                     }
                 });
 
-                // 3. 메인 구매 버튼 업데이트
-                const btn = document.getElementById('main-buy-btn');
-                if (count > 0) {
-                    btn.querySelector('span:first-child').innerText = `${total.toLocaleString()}원 구매하기 (${count}개)`;
-                    btn.classList.remove('bg-gray-300', 'text-gray-500', 'pointer-events-none');
-                    btn.classList.add('bg-amber-400', 'text-black');
-                } else {
-                    btn.querySelector('span:first-child').innerText = "재료를 선택해주세요";
-                    btn.classList.remove('bg-amber-400', 'text-black');
-                    btn.classList.add('bg-gray-300', 'text-gray-500'); // 비활성 스타일은 아니지만 회색 처리
-                }
+                const btn = document.getElementById('buy-btn');
+                const priceEl = document.getElementById('total-price');
 
-                // 4. 헤더 배지
-                const badge = document.getElementById('header-cart-badge');
-                badge.innerText = count;
-                badge.classList.toggle('hidden', count === 0);
-            }
-
-            // 장바구니 뷰 열기/닫기 및 렌더링
-            toggleCartView() {
-                const view = document.getElementById('view-cart');
-                const isOpen = !view.classList.contains('translate-y-full');
+                priceEl.innerText = `${total.toLocaleString()}원`;
                 
-                if (!isOpen) {
-                    // 열릴 때 렌더링
-                    this.renderCartItems();
-                    view.classList.remove('translate-y-full');
+                if (count === 0) {
+                    btn.classList.add('opacity-50', 'grayscale');
+                    btn.querySelector('span:last-child').innerText = "재료를 선택하세요";
                 } else {
-                    view.classList.add('translate-y-full');
+                    btn.classList.remove('opacity-50', 'grayscale');
+                    btn.querySelector('span:last-child').innerText = `${count}개 구매하러 가기`;
                 }
             }
 
-            renderCartItems() {
-                const container = document.getElementById('cart-items-container');
-                const selectedItems = RECIPE_DATA.ingredients.filter(i => this.cartIds.includes(i.id));
-                
-                let total = 0;
-                
-                if (selectedItems.length === 0) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-64 text-gray-400">
-                            <i class="fa-solid fa-basket-shopping text-4xl mb-2"></i>
-                            <p>장바구니가 비었습니다</p>
-                        </div>`;
-                } else {
-                    container.innerHTML = selectedItems.map(ing => {
-                        total += ing.price;
-                        return `
-                        <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-xl">🥕</div>
-                                <div>
-                                    <p class="font-bold text-sm">${ing.name}</p>
-                                    <p class="text-xs text-gray-500">${ing.price.toLocaleString()}원</p>
-                                </div>
-                            </div>
-                            <button onclick="app.toggleItem('${ing.id}'); app.renderCartItems()" class="text-gray-400 hover:text-red-500 p-2">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                        `;
-                    }).join('');
-                }
-                document.getElementById('cart-total-price').innerText = `${total.toLocaleString()}원`;
-            }
-
-            // 구매하기 (링크 열기)
             buySelected() {
-                if (this.cartIds.length === 0) {
+                if (this.selectedIds.size === 0) {
                     this.showToast("선택된 재료가 없습니다.");
                     return;
                 }
-                this.checkout();
-            }
-
-            checkout() {
-                const selectedItems = RECIPE_DATA.ingredients.filter(i => this.cartIds.includes(i.id));
-                if (selectedItems.length === 0) return;
-
-                if (confirm(`${selectedItems.length}개의 상품 구매 페이지를 엽니다.\n(팝업 차단을 해제해주세요)`)) {
+                
+                const selectedItems = this.data.ingredients.filter(i => this.selectedIds.has(i.id));
+                if(confirm(`총 ${selectedItems.length}개의 상품 페이지를 엽니다.\n(팝업 차단을 확인해주세요)`)) {
                     selectedItems.forEach(item => window.open(item.link, '_blank'));
                 }
-            }
-
-            save() {
-                localStorage.setItem('myCartIds', JSON.stringify(this.cartIds));
             }
 
             showToast(msg) {
                 const container = document.getElementById('toast-container');
                 const el = document.createElement('div');
-                el.className = 'toast bg-black/80 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg mb-2 mx-auto w-max flex items-center gap-2 backdrop-blur-sm';
-                el.innerHTML = `<i class="fa-solid fa-check text-amber-400"></i> ${msg}`;
+                el.className = 'bg-neutral-800/90 text-white text-xs font-medium px-4 py-3 rounded-full shadow-xl mb-3 border border-white/10 flex items-center gap-2 backdrop-blur animate-bounce';
+                el.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> ${msg}`;
                 container.appendChild(el);
                 setTimeout(() => el.remove(), 2500);
+            }
+
+            // 데이터 리로드 (Admin 저장 후)
+            reloadData() {
+                this.data = JSON.parse(localStorage.getItem('recipeAdminData'));
+                this.selectedIds = new Set(this.data.ingredients.map(i => i.id));
+                this.init();
+            }
+        }
+
+        // --- Admin Logic ---
+        class AdminController {
+            constructor() {
+                this.modal = document.getElementById('admin-modal');
+            }
+
+            openSettings() {
+                this.modal.classList.remove('hidden');
+                // Load current data into inputs
+                document.getElementById('admin-video-id').value = app.data.videoId;
+                document.getElementById('admin-recipe-title').value = app.data.title;
+                this.renderAdminInputs();
+            }
+
+            closeSettings() {
+                this.modal.classList.add('hidden');
+            }
+
+            renderAdminInputs() {
+                const list = document.getElementById('admin-ing-list');
+                list.innerHTML = app.data.ingredients.map((ing, idx) => `
+                    <div class="bg-black p-3 rounded-xl border border-white/10 space-y-2 relative group">
+                        <button onclick="admin.removeIngredient(${idx})" class="absolute top-2 right-2 text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                        <div class="grid grid-cols-2 gap-2 pr-6">
+                            <input type="text" class="bg-neutral-900 text-white text-sm px-3 py-2 rounded border border-white/5" value="${ing.name}" onchange="admin.updateTempData(${idx}, 'name', this.value)" placeholder="재료명">
+                            <input type="number" class="bg-neutral-900 text-white text-sm px-3 py-2 rounded border border-white/5" value="${ing.price}" onchange="admin.updateTempData(${idx}, 'price', this.value)" placeholder="가격">
+                        </div>
+                        <input type="text" class="bg-neutral-900 text-white text-xs px-3 py-2 rounded border border-white/5 w-full" value="${ing.link}" onchange="admin.updateTempData(${idx}, 'link', this.value)" placeholder="쿠팡 링크 (URL)">
+                    </div>
+                `).join('');
+            }
+
+            addIngredientField() {
+                app.data.ingredients.push({ id: 'new_'+Date.now(), name: '', price: 0, link: '', desc: '' });
+                this.renderAdminInputs();
+            }
+
+            removeIngredient(index) {
+                app.data.ingredients.splice(index, 1);
+                this.renderAdminInputs();
+            }
+
+            updateTempData(index, field, value) {
+                app.data.ingredients[index][field] = value;
+            }
+
+            previewVideo() {
+                const newId = document.getElementById('admin-video-id').value;
+                if(newId) {
+                    app.data.videoId = newId;
+                    alert("영상이 변경되었습니다. 저장 후 메인 화면에서 확인하세요.");
+                }
+            }
+
+            saveAndClose() {
+                const newTitle = document.getElementById('admin-recipe-title').value;
+                app.data.title = newTitle;
+                
+                localStorage.setItem('recipeAdminData', JSON.stringify(app.data));
+                app.reloadData();
+                this.closeSettings();
+                app.showToast("설정이 저장되었습니다.");
+            }
+
+            resetToDefault() {
+                if(confirm("초기 데이터로 되돌리시겠습니까?")) {
+                    localStorage.removeItem('recipeAdminData');
+                    location.reload();
+                }
             }
         }
 
         const app = new RecipeApp();
+        const admin = new AdminController();
     </script>
 </body>
 </html>
