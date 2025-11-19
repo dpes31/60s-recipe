@@ -1,294 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Play, Pause, ChevronLeft, Share2, Heart, Check, X, ExternalLink, Info } from 'lucide-react';
-
-const App = () => {
-  // 상태 관리
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [isLiked, setIsLiked] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  // 가상 데이터 (요청하신 쿠팡 링크 및 재료)
-  // 실제 서비스에서는 쿠팡 API나 백엔드 크롤링으로 썸네일과 가격을 가져와야 합니다.
-  // 여기서는 UI 구현을 위해 더미 이미지와 가격을 사용합니다.
-  const recipeData = {
-    title: "실패 없는 깊은 맛, 소고기 카레",
-    description: "물을 넣지 않고 양파의 채수와 우유로만 끓여낸 진한 풍미의 프리미엄 카레 레시피입니다.",
-    cookTime: "30분",
-    serving: "2인분",
-    difficulty: "보통",
-    videoPoster: "https://images.unsplash.com/photo-1604542031651-541535e2fa60?q=80&w=800&auto=format&fit=crop", // 카레 이미지
-    ingredients: [
-      {
-        id: 1,
-        name: "햇 양파 (3kg)",
-        price: 8900,
-        link: "https://link.coupang.com/a/c5CXMg",
-        image: "https://images.unsplash.com/photo-1508747703725-719777637519?auto=format&fit=crop&w=150&q=80"
-      },
-      {
-        id: 2,
-        name: "세척 당근 (1kg)",
-        price: 4500,
-        link: "https://link.coupang.com/a/c5CYAb",
-        image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=150&q=80"
-      },
-      {
-        id: 3,
-        name: "소고기 국거리용 (300g)",
-        price: 15900,
-        link: "https://link.coupang.com/a/c5CZbA",
-        image: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&w=150&q=80"
-      },
-      {
-        id: 4,
-        name: "고형 카레 (매운맛)",
-        price: 3200,
-        link: "https://link.coupang.com/a/c5CZJz",
-        image: "https://images.unsplash.com/photo-1531287383269-d22ca1c8c605?auto=format&fit=crop&w=150&q=80"
-      }
-    ]
-  };
-
-  // 초기화 시 모든 재료 선택
-  useEffect(() => {
-    setSelectedItems(recipeData.ingredients.map(i => i.id));
-  }, []);
-
-  // 아이템 선택 토글
-  const toggleItem = (id) => {
-    if (selectedItems.includes(id)) {
-      setSelectedItems(selectedItems.filter(itemId => itemId !== id));
-    } else {
-      setSelectedItems([...selectedItems, id]);
-    }
-  };
-
-  // 전체 선택 토글
-  const toggleAll = () => {
-    if (selectedItems.length === recipeData.ingredients.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(recipeData.ingredients.map(i => i.id));
-    }
-  };
-
-  // 총 가격 계산
-  const totalPrice = recipeData.ingredients
-    .filter(item => selectedItems.includes(item.id))
-    .reduce((sum, item) => sum + item.price, 0);
-
-  // 구매 시뮬레이션 (실제로는 링크를 열거나 장바구니 API 호출)
-  const handleBuy = () => {
-    if (selectedItems.length === 0) {
-      showToast("선택된 재료가 없습니다.");
-      return;
-    }
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카레 레시피</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel (JSX 변환용) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    showToast(`${selectedItems.length}개의 상품 링크를 엽니다.`);
-    
-    // 팝업 차단 방지를 위해 딜레이를 두거나 확인 모달을 띄우는 것이 좋으나, 
-    // 데모에서는 가장 최근 항목 하나를 여는 것으로 시뮬레이션 합니다.
-    // 실제 구현시에는 '구매하기' 페이지로 데이터를 넘기거나, 각 링크를 리스트업 해주는 모달을 띄웁니다.
-    
-    // 예시: 첫번째 선택 아이템 열기
-    const firstItem = recipeData.ingredients.find(i => i.id === selectedItems[0]);
-    if(firstItem) window.open(firstItem.link, '_blank');
-  };
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-0 md:p-4 font-sans text-gray-900">
-      {/* 모바일 레이아웃 컨테이너 */}
-      <div className="w-full max-w-md bg-white md:rounded-[2rem] shadow-2xl overflow-hidden relative min-h-[100vh] md:min-h-[850px] flex flex-col">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; }
         
-        {/* 상단 헤더 (투명/플로팅) */}
-        <header className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center text-white bg-gradient-to-b from-black/50 to-transparent">
-          <button className="p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 transition">
-            <ChevronLeft size={24} />
-          </button>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setIsLiked(!isLiked)}
-              className={`p-2 rounded-full backdrop-blur-md transition ${isLiked ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
-            >
-              <Heart size={24} fill={isLiked ? "currentColor" : "none"} />
-            </button>
-            <button className="p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 transition">
-              <Share2 size={24} />
-            </button>
-          </div>
-        </header>
+        /* 스크롤바 숨기기 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        {/* 비디오 영역 (Hero Section) */}
-        <div className="relative h-[55vh] bg-gray-900 shrink-0">
-            {/* 비디오 포스터/썸네일 */}
-            <img 
-              src={recipeData.videoPoster} 
-              alt="Recipe Video" 
-              className="w-full h-full object-cover opacity-90"
-            />
-            
-            {/* 비디오 컨트롤 오버레이 */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button 
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center hover:scale-110 transition duration-300 group"
-              >
-                {isPlaying ? 
-                  <Pause size={32} className="text-white ml-0.5" /> : 
-                  <Play size={32} className="text-white ml-1 group-hover:text-amber-400 transition" fill="currentColor" />
-                }
-              </button>
-            </div>
-            
-            {/* 그라데이션 오버레이 (텍스트 가독성용) */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
-        </div>
-
-        {/* 컨텐츠 시트 (Bottom Sheet 스타일) */}
-        <div className="flex-1 bg-white relative -mt-6 rounded-t-[2rem] z-10 flex flex-col pb-24">
-          {/* 핸들바 */}
-          <div className="w-full flex justify-center pt-3 pb-1">
-            <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
-          </div>
-
-          <div className="px-6 pt-4 pb-8">
-            {/* 타이틀 및 정보 */}
-            <div className="mb-8">
-              <span className="inline-block px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full mb-2">
-                BEST 레시피
-              </span>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{recipeData.title}</h1>
-              <p className="text-gray-500 text-sm leading-relaxed mb-4">{recipeData.description}</p>
-              
-              <div className="flex items-center gap-4 text-sm text-gray-500 border-b border-gray-100 pb-6">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  {recipeData.cookTime}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  {recipeData.difficulty}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  {recipeData.serving}
-                </div>
-              </div>
-            </div>
-
-            {/* 재료 섹션 헤더 */}
-            <div className="flex justify-between items-end mb-4">
-              <h2 className="text-lg font-bold flex items-center gap-2">
-                필요한 재료
-                <span className="text-amber-500 text-sm font-normal bg-amber-50 px-2 py-0.5 rounded-md">
-                  {recipeData.ingredients.length}개
-                </span>
-              </h2>
-              <button 
-                onClick={toggleAll}
-                className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-4"
-              >
-                {selectedItems.length === recipeData.ingredients.length ? '전체 해제' : '전체 선택'}
-              </button>
-            </div>
-
-            {/* 재료 리스트 */}
-            <div className="space-y-3">
-              {recipeData.ingredients.map((item) => {
-                const isSelected = selectedItems.includes(item.id);
-                return (
-                  <div 
-                    key={item.id} 
-                    className={`group flex items-center gap-4 p-3 rounded-2xl border transition-all duration-200 ${
-                      isSelected ? 'border-amber-400 bg-amber-50/30' : 'border-gray-100 bg-white hover:border-gray-200'
-                    }`}
-                  >
-                    {/* 체크박스 영역 */}
-                    <button 
-                      onClick={() => toggleItem(item.id)}
-                      className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        isSelected ? 'border-amber-500 bg-amber-500' : 'border-gray-300 bg-white'
-                      }`}
-                    >
-                      {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
-                    </button>
-
-                    {/* 썸네일 이미지 */}
-                    <div className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gray-100 relative">
-                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                       {/* 로켓 아이콘 뱃지 (쿠팡 느낌) */}
-                       <div className="absolute bottom-0 right-0 bg-blue-500 text-white text-[8px] px-1 py-0.5 rounded-tl-md">
-                         ROCKET
-                       </div>
-                    </div>
-
-                    {/* 텍스트 정보 */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`font-medium truncate ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
-                        {item.name}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-sm font-bold text-gray-900">
-                          {item.price.toLocaleString()}원
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 개별 링크 이동 버튼 */}
-                    <a 
-                      href={item.link} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="shrink-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition"
-                    >
-                      <ExternalLink size={18} />
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* 하단 여백 (스크롤 시 짤림 방지) */}
-            <div className="h-8" />
-          </div>
-        </div>
-
-        {/* 하단 플로팅 구매 바 */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-30">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-500">
-              총 <strong className="text-amber-600">{selectedItems.length}</strong>개 선택됨
-            </span>
-            <div className="text-lg font-bold text-gray-900">
-              {totalPrice.toLocaleString()}원
-            </div>
-          </div>
-          <button 
-            onClick={handleBuy}
-            className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.98] transition-all shadow-lg shadow-gray-200"
-          >
-            <ShoppingCart size={20} />
-            <span>재료 한 번에 담기</span>
-          </button>
-        </div>
-
-        {/* 토스트 메시지 */}
-        {toast && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900/90 text-white px-6 py-3 rounded-full text-sm backdrop-blur-sm animate-fade-in-up z-50 whitespace-nowrap shadow-xl flex items-center gap-2">
-            <Info size={16} className="text-amber-400" />
-            {toast}
-          </div>
-        )}
-
-      </div>
-
-      <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translate(-50%, -40%); }
           to { opacity: 1; transform: translate(-50%, -50%); }
@@ -296,9 +27,227 @@ const App = () => {
         .animate-fade-in-up {
           animation: fadeInUp 0.3s ease-out forwards;
         }
-      `}</style>
-    </div>
-  );
-};
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex items-center justify-center p-0 md:p-4">
 
-export default App;
+    <div id="root" class="w-full flex justify-center"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 아이콘 컴포넌트 (Lucide 아이콘을 SVG로 변환) ---
+        const Icon = ({ d, size = 24, className = "", fill = "none", strokeWidth = 2 }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {d}
+            </svg>
+        );
+
+        const ChevronLeft = (props) => <Icon {...props} d={<path d="M15 18l-6-6 6-6" />} />;
+        const Heart = ({ fill = "none", ...props }) => <Icon {...props} fill={fill} d={<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />} />;
+        const Share2 = (props) => <Icon {...props} d={<g><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></g>} />;
+        const Play = (props) => <Icon {...props} d={<polygon points="5 3 19 12 5 21 5 3" />} fill="currentColor" strokeWidth={0} />;
+        const Pause = (props) => <Icon {...props} d={<g><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></g>} fill="currentColor" strokeWidth={0} />;
+        const Check = (props) => <Icon {...props} d={<polyline points="20 6 9 17 4 12" />} />;
+        const ExternalLink = (props) => <Icon {...props} d={<g><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></g>} />;
+        const ShoppingCart = (props) => <Icon {...props} d={<g><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></g>} />;
+        const Info = (props) => <Icon {...props} d={<g><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></g>} />;
+
+        // --- 메인 앱 컴포넌트 ---
+        const App = () => {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [selectedItems, setSelectedItems] = useState([]);
+            const [isLiked, setIsLiked] = useState(false);
+            const [toast, setToast] = useState(null);
+
+            const recipeData = {
+                title: "실패 없는 깊은 맛, 소고기 카레",
+                description: "물을 넣지 않고 양파의 채수와 우유로만 끓여낸 진한 풍미의 프리미엄 카레 레시피입니다.",
+                cookTime: "30분",
+                serving: "2인분",
+                difficulty: "보통",
+                videoPoster: "https://images.unsplash.com/photo-1604542031651-541535e2fa60?q=80&w=800&auto=format&fit=crop",
+                ingredients: [
+                    { id: 1, name: "햇 양파 (3kg)", price: 8900, link: "https://link.coupang.com/a/c5CXMg", image: "https://images.unsplash.com/photo-1508747703725-719777637519?auto=format&fit=crop&w=150&q=80" },
+                    { id: 2, name: "세척 당근 (1kg)", price: 4500, link: "https://link.coupang.com/a/c5CYAb", image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=150&q=80" },
+                    { id: 3, name: "소고기 국거리용 (300g)", price: 15900, link: "https://link.coupang.com/a/c5CZbA", image: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&w=150&q=80" },
+                    { id: 4, name: "고형 카레 (매운맛)", price: 3200, link: "https://link.coupang.com/a/c5CZJz", image: "https://images.unsplash.com/photo-1531287383269-d22ca1c8c605?auto=format&fit=crop&w=150&q=80" }
+                ]
+            };
+
+            useEffect(() => {
+                setSelectedItems(recipeData.ingredients.map(i => i.id));
+            }, []);
+
+            const toggleItem = (id) => {
+                if (selectedItems.includes(id)) {
+                    setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+                } else {
+                    setSelectedItems([...selectedItems, id]);
+                }
+            };
+
+            const toggleAll = () => {
+                if (selectedItems.length === recipeData.ingredients.length) {
+                    setSelectedItems([]);
+                } else {
+                    setSelectedItems(recipeData.ingredients.map(i => i.id));
+                }
+            };
+
+            const totalPrice = recipeData.ingredients
+                .filter(item => selectedItems.includes(item.id))
+                .reduce((sum, item) => sum + item.price, 0);
+
+            const handleBuy = () => {
+                if (selectedItems.length === 0) {
+                    showToast("선택된 재료가 없습니다.");
+                    return;
+                }
+                
+                showToast(`${selectedItems.length}개의 상품 링크를 엽니다.`);
+                const firstItem = recipeData.ingredients.find(i => i.id === selectedItems[0]);
+                if(firstItem) window.open(firstItem.link, '_blank');
+            };
+
+            const showToast = (msg) => {
+                setToast(msg);
+                setTimeout(() => setToast(null), 3000);
+            };
+
+            return (
+                <div className="w-full max-w-md bg-white md:rounded-[2rem] shadow-2xl overflow-hidden relative min-h-[100vh] md:min-h-[850px] flex flex-col">
+                    {/* 상단 헤더 */}
+                    <header className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center text-white bg-gradient-to-b from-black/50 to-transparent">
+                        <button className="p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 transition">
+                            <ChevronLeft size={24} />
+                        </button>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => setIsLiked(!isLiked)}
+                                className={`p-2 rounded-full backdrop-blur-md transition ${isLiked ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                            >
+                                <Heart size={24} fill={isLiked ? "currentColor" : "none"} />
+                            </button>
+                            <button className="p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 transition">
+                                <Share2 size={24} />
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* 비디오 영역 */}
+                    <div className="relative h-[55vh] bg-gray-900 shrink-0 group">
+                        <img 
+                            src={recipeData.videoPoster} 
+                            alt="Recipe Video" 
+                            className="w-full h-full object-cover opacity-90"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <button 
+                                onClick={() => setIsPlaying(!isPlaying)}
+                                className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center hover:scale-110 transition duration-300"
+                            >
+                                {isPlaying ? 
+                                    <Pause size={32} className="text-white ml-0.5" /> : 
+                                    <Play size={32} className="text-white ml-1 transition" />
+                                }
+                            </button>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    </div>
+
+                    {/* 컨텐츠 시트 */}
+                    <div className="flex-1 bg-white relative -mt-6 rounded-t-[2rem] z-10 flex flex-col pb-24">
+                        <div className="w-full flex justify-center pt-3 pb-1">
+                            <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+                        </div>
+
+                        <div className="px-6 pt-4 pb-8">
+                            <div className="mb-8">
+                                <span className="inline-block px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full mb-2">BEST 레시피</span>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{recipeData.title}</h1>
+                                <p className="text-gray-500 text-sm leading-relaxed mb-4">{recipeData.description}</p>
+                                
+                                <div className="flex items-center gap-4 text-sm text-gray-500 border-b border-gray-100 pb-6">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>{recipeData.cookTime}
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>{recipeData.difficulty}
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>{recipeData.serving}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-end mb-4">
+                                <h2 className="text-lg font-bold flex items-center gap-2">
+                                    필요한 재료
+                                    <span className="text-amber-500 text-sm font-normal bg-amber-50 px-2 py-0.5 rounded-md">{recipeData.ingredients.length}개</span>
+                                </h2>
+                                <button onClick={toggleAll} className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-4">
+                                    {selectedItems.length === recipeData.ingredients.length ? '전체 해제' : '전체 선택'}
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {recipeData.ingredients.map((item) => {
+                                    const isSelected = selectedItems.includes(item.id);
+                                    return (
+                                        <div key={item.id} className={`group flex items-center gap-4 p-3 rounded-2xl border transition-all duration-200 ${isSelected ? 'border-amber-400 bg-amber-50/30' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                                            <button 
+                                                onClick={() => toggleItem(item.id)}
+                                                className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-amber-500 bg-amber-500' : 'border-gray-300 bg-white'}`}
+                                            >
+                                                {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
+                                            </button>
+                                            <div className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gray-100 relative">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                <div className="absolute bottom-0 right-0 bg-blue-500 text-white text-[8px] px-1 py-0.5 rounded-tl-md">ROCKET</div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className={`font-medium truncate ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{item.name}</h3>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <span className="text-sm font-bold text-gray-900">{item.price.toLocaleString()}원</span>
+                                                </div>
+                                            </div>
+                                            <a href={item.link} target="_blank" rel="noreferrer" className="shrink-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition">
+                                                <ExternalLink size={18} />
+                                            </a>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="h-8"></div>
+                        </div>
+                    </div>
+
+                    {/* 하단 플로팅 바 */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-30">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm text-gray-500">총 <strong className="text-amber-600">{selectedItems.length}</strong>개 선택됨</span>
+                            <div className="text-lg font-bold text-gray-900">{totalPrice.toLocaleString()}원</div>
+                        </div>
+                        <button onClick={handleBuy} className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.98] transition-all shadow-lg shadow-gray-200">
+                            <ShoppingCart size={20} />
+                            <span>재료 한 번에 담기</span>
+                        </button>
+                    </div>
+
+                    {/* 토스트 메시지 */}
+                    {toast && (
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900/90 text-white px-6 py-3 rounded-full text-sm backdrop-blur-sm animate-fade-in-up z-50 whitespace-nowrap shadow-xl flex items-center gap-2">
+                            <Info size={16} className="text-amber-400" />
+                            {toast}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
