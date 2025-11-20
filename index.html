@@ -76,7 +76,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- 안정적인 아이콘 컴포넌트 (오류 원천 차단) ---
+        // --- 안정적인 아이콘 컴포넌트 ---
         const ChevronLeft = ({ size=24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         );
@@ -136,7 +136,7 @@
             const [showBuyModal, setShowBuyModal] = useState(false);
 
             useEffect(() => {
-                const saved = localStorage.getItem('myRecipeApp_v5'); // v5로 업데이트 (충돌 방지)
+                const saved = localStorage.getItem('myRecipeApp_v7'); // v7로 업데이트
                 if (saved) {
                     try {
                         setRecipe({ ...initialData, ...JSON.parse(saved) });
@@ -145,7 +145,7 @@
             }, []);
 
             useEffect(() => {
-                localStorage.setItem('myRecipeApp_v5', JSON.stringify(recipe));
+                localStorage.setItem('myRecipeApp_v7', JSON.stringify(recipe));
             }, [recipe]);
 
             useEffect(() => {
@@ -209,9 +209,9 @@
             };
 
             return (
-                <div className="w-full max-w-md bg-white md:my-4 md:rounded-[2rem] shadow-2xl relative min-h-[100vh] md:min-h-[850px] flex flex-col mx-auto">
+                <div className="w-full max-w-md bg-white md:my-4 md:rounded-[2rem] shadow-2xl relative min-h-[100vh] flex flex-col mx-auto overflow-hidden">
                     
-                    {/* 상단 헤더 (수정 버튼 삭제됨) */}
+                    {/* 상단 헤더 */}
                     <header className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between items-center text-white bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
                         <div className="pointer-events-auto">
                             <button className="p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30 transition">
@@ -225,8 +225,8 @@
                         </div>
                     </header>
 
-                    {/* 영상 영역 (40vh로 조정하여 타이틀 노출 확보) */}
-                    <div className="relative bg-gray-900 shrink-0 w-full h-[40vh] overflow-hidden">
+                    {/* 영상 영역 (75vh로 대폭 확대) */}
+                    <div className="relative bg-gray-900 shrink-0 w-full h-[75vh] overflow-hidden">
                         <div className="iframe-wrapper">
                             <iframe 
                                 src={`https://www.youtube.com/embed/${recipe.videoId || "Q0KJjfpk6YM"}?autoplay=1&loop=1&playlist=${recipe.videoId || "Q0KJjfpk6YM"}&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3`}
@@ -236,11 +236,12 @@
                                 allowFullScreen
                             ></iframe>
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                        {/* 하단 그라데이션 */}
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
                     </div>
 
                     {/* 컨텐츠 시트 */}
-                    <div className="flex-1 bg-white relative -mt-6 rounded-t-[2rem] z-10 flex flex-col pb-32 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+                    <div className="flex-1 bg-white relative -mt-20 rounded-t-[2rem] z-10 flex flex-col pb-12 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] min-h-[50vh]">
                         <div className="w-full flex justify-center pt-3 pb-1">
                             <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
                         </div>
@@ -331,11 +332,15 @@
                                                     {isIngEditing ? (
                                                         <div className="space-y-2">
                                                             <input type="text" value={item.name} onChange={(e) => handleIngredientChange(item.id, 'name', e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-gray-50" placeholder="재료명" />
-                                                            <div className="flex gap-2">
-                                                                <input type="number" value={item.price} onChange={(e) => handleIngredientChange(item.id, 'price', parseInt(e.target.value) || 0)} className="w-24 border border-gray-300 rounded px-2 py-1 text-sm bg-gray-50" placeholder="가격" />
-                                                                <span className="text-sm flex items-center">원</span>
-                                                            </div>
-                                                            <input type="text" value={item.link} onChange={(e) => handleIngredientChange(item.id, 'link', e.target.value)} className="w-full border border-blue-200 rounded px-2 py-1 text-xs text-blue-600 bg-blue-50/30" placeholder="구매 링크 (https://...)" />
+                                                            {/* 금액 입력란 제거됨 */}
+                                                            <input 
+                                                                type="text" 
+                                                                value={item.link} 
+                                                                onChange={(e) => handleIngredientChange(item.id, 'link', e.target.value)} 
+                                                                onFocus={() => showToast("보안상 자동 입력이 불가합니다. 직접 입력해주세요.")}
+                                                                className="w-full border border-blue-200 rounded px-2 py-1 text-xs text-blue-600 bg-blue-50/30" 
+                                                                placeholder="구매 링크 (https://...)" 
+                                                            />
                                                         </div>
                                                     ) : (
                                                         <>
@@ -357,26 +362,27 @@
                                     );
                                 })}
                             </div>
+
+                            {/* 하단 구매 바 (스크롤을 내려야 보임) */}
+                            {!isIngEditing && !isInfoEditing && (
+                                <div className="mt-8 w-full">
+                                    <div className="w-full bg-gray-900 text-white rounded-2xl p-4 shadow-lg">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-sm text-gray-300">총 <strong className="text-amber-400">{selectedItems.length}</strong>개 선택됨</span>
+                                            <div className="text-lg font-bold">{totalPrice.toLocaleString()}원</div>
+                                        </div>
+                                        <button onClick={handleBuyClick} className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-[0.98] transition-all">
+                                            <ShoppingCart size={20} />
+                                            <span>재료 한 번에 담기</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            
                         </div>
                     </div>
 
-                    {/* 하단 구매 바 (수정 모드 아닐때만 노출, 강제 고정) */}
-                    {!isIngEditing && !isInfoEditing && (
-                        <div className="fixed bottom-0 left-0 right-0 flex justify-center z-50 bg-transparent pointer-events-none">
-                            <div className="w-full max-w-md bg-white border-t border-gray-100 p-4 px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] pointer-events-auto md:rounded-b-[2rem]">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-sm text-gray-500">총 <strong className="text-amber-600">{selectedItems.length}</strong>개 선택됨</span>
-                                    <div className="text-lg font-bold text-gray-900">{totalPrice.toLocaleString()}원</div>
-                                </div>
-                                <button onClick={handleBuyClick} className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.98] transition-all shadow-lg">
-                                    <ShoppingCart size={20} />
-                                    <span>재료 한 번에 담기</span>
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 구매 모달 (화면 정중앙 고정) */}
+                    {/* 구매 모달 */}
                     {showBuyModal && (
                         <div className="fixed-modal-overlay animate-fade-in-up" onClick={() => setShowBuyModal(false)}>
                             <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
